@@ -1,0 +1,19 @@
+{
+  "name": "particle-sim-v2",
+  "version": "1.0.0",
+  "description": "particle simulation app build with es6 and threejs.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/kochie/particle-sim-v2.git"
+  },
+  "author": "Robert Koch",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kochie/particle-sim-v2/issues"
+  },
+  "homepage": "https://github.com/kochie/particle-sim-v2#readme"
+}
