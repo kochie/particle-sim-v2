@@ -15,5 +15,9 @@
   "bugs": {
     "url": "https://github.com/kochie/particle-sim-v2/issues"
   },
-  "homepage": "https://github.com/kochie/particle-sim-v2#readme"
+  "homepage": "https://github.com/kochie/particle-sim-v2#readme",
+  "dependencies": {},
+  "devDependencies": {
+    "gulp": "^3.9.1"
+  }
 }
