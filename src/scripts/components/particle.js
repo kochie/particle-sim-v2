@@ -57,11 +57,13 @@ class Particle{
     calcPosition(dt){
         let acceleration = this.acceleration.multiplyScalar(0.5*dt);
         let speed = this.velocity.multiplyScalar(dt);
-        this.position.addVectors(acceleration, speed);
+        this.position.add(new THREE.Vector3().addVectors(acceleration, speed));
     }
 
     setPosition(){
-        this.mesh.position.set(this.position);
+        this.mesh.position.set(this.position.x, this.position.y, this.position.z);
+        console.log(this.mesh.position.x);
+        // console.log(this.position);
     }
 }
 

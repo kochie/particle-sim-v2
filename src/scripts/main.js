@@ -58,12 +58,12 @@ function animate(env){
     env.meshObjects[0].rotation.x += 0.05;
     env.particles[0].calcForce();
     env.particles[0].calcAcceleration();
-    env.particles[0].calcVelocity(0.001);
-    env.particles[0].calcPosition(0.001);
+    env.particles[0].calcVelocity(0.1);
+    env.particles[0].calcPosition(0.1);
     env.particles[0].setPosition();
     //env.camera.rotation.x += 0.01;
     //env.meshObjects[0].rotation.z += 0.2;
-    console.log(env.particles[0].mesh.position)
+    // console.log(env.particles[0].mesh.position)
 }
 
 
