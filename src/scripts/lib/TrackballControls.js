@@ -5,13 +5,13 @@
  * @author Luca Antiga 	/ http://lantiga.github.io
  */
 
-THREE.TrackballControls = function ( object, domElement ) {
+    THREE.TrackballControls = function ( object, domElement ) {
 
-    var _this = this;
-    var STATE = { NONE: - 1, ROTATE: 0, ZOOM: 1, PAN: 2, TOUCH_ROTATE: 3, TOUCH_ZOOM_PAN: 4 };
+    const _this = this;
+    const STATE = { NONE: - 1, ROTATE: 0, ZOOM: 1, PAN: 2, TOUCH_ROTATE: 3, TOUCH_ZOOM_PAN: 4 };
 
     this.object = object;
-    this.domElement = ( domElement !== undefined ) ? domElement : document;
+    this.domElement = (domElement !== undefined) ? domElement : document;
 
     // API
 
@@ -39,11 +39,13 @@ THREE.TrackballControls = function ( object, domElement ) {
 
     this.target = new THREE.Vector3();
 
-    var EPS = 0.000001;
+    //this.target = new THREE.Vector3().addVectors(object.position, object.getWorldDirection());
 
-    var lastPosition = new THREE.Vector3();
+    const EPS = 0.000001;
 
-    var _state = STATE.NONE,
+    let lastPosition = new THREE.Vector3();
+
+    let _state = STATE.NONE,
         _prevState = STATE.NONE,
 
         _eye = new THREE.Vector3(),
@@ -68,6 +70,7 @@ THREE.TrackballControls = function ( object, domElement ) {
     this.target0 = this.target.clone();
     this.position0 = this.object.position.clone();
     this.up0 = this.object.up.clone();
+    // console.log(this.target0);
 
     // events
 
@@ -79,16 +82,13 @@ THREE.TrackballControls = function ( object, domElement ) {
     // methods
 
     this.handleResize = function () {
-
         if ( this.domElement === document ) {
-
             this.screen.left = 0;
             this.screen.top = 0;
             this.screen.width = window.innerWidth;
             this.screen.height = window.innerHeight;
-
-        } else {
-
+        }
+        else {
             var box = this.domElement.getBoundingClientRect();
             // adjustments come from similar code in the jquery offset() function
             var d = this.domElement.ownerDocument.documentElement;
@@ -147,7 +147,7 @@ THREE.TrackballControls = function ( object, domElement ) {
 
     this.rotateCamera = ( function() {
 
-        var axis = new THREE.Vector3(),
+        let axis = new THREE.Vector3(),
             quaternion = new THREE.Quaternion(),
             eyeDirection = new THREE.Vector3(),
             objectUpDirection = new THREE.Vector3(),

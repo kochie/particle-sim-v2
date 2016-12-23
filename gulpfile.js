@@ -36,6 +36,7 @@ gulp.task('scripts', function() {
     return gulp.src('src/scripts/**/*.js')
         .pipe(order([
             "src/scripts/lib/**/*.js",
+            "src/scripts/components/**/*.js",
             "src/scripts/**/*.js"
         ]))
         // .pipe(jshint('.jshintrc'))
@@ -60,10 +61,10 @@ gulp.task('clean', function() {
 });
 
 gulp.task('default', ['clean'], function() {
-    gulp.start('styles', 'scripts', 'images', 'html', 'index');
+    gulp.start('styles', 'scripts', 'images', 'index');
 });
 
-gulp.task('index', function () {
+gulp.task('index', ['html'], function () {
     const target = gulp.src('./dist/index.html');
     // It's not necessary to read the files (will speed up things), we're only after their paths:
     const sources = gulp.src(['./dist/**/*.min.js', './dist/**/*.min.css'], {read: false});
