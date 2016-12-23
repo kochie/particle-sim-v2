@@ -1,6 +1,33 @@
 /**
  * Created by rkoch on 12/23/16.
  */
+class ParticleGroup{
+    constructor(env){
+        this.particles = [];
+        this.sumForce = [];
+    }
+
+    addPatricle(particle){
+        this.particles.push(particle);
+    }
+
+    removeParticle(){
+
+    }
+
+    updateForce(i, j, value){
+        /*
+        |(1,1) (1,2) (1,3) (1,4)|
+        |(2,1) (2,2) (2,3) (2,4)|
+        |(3,1) (3,2) (3,3) (3,4)|
+        |(4,1) (4,2) (4,3) (4,4)|
+
+        [(1,2) (1,3) (2,3)]
+         */
+
+        return this.sumForce[(j-1)+(i-1)];
+    }
+}
 
 
 class Particle{

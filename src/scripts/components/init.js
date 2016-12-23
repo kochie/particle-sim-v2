@@ -63,14 +63,17 @@ function init(){
 
     // var light = new THREE.AmbientLight( 0xfff000 ); // soft white light
     // env.scene.add( light );
+
     const directionalLight1 = new THREE.DirectionalLight( 0xffffff, 2 );
     directionalLight1.position.set( 0, 1, 0 );
     env.scene.add( directionalLight1 );
+
     const directionalLight2 = new THREE.DirectionalLight( 0xffffff, 2 );
     directionalLight2.position.set( 0, -1, 0 );
     env.scene.add( directionalLight2 );
 
     new Neutron(env);
+
 
     window.onload = function() {
         env.text = new FizzyText();
