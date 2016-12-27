@@ -6,14 +6,15 @@
 
 class Environment {
     constructor(options){
+        this.raycaster = new THREE.Raycaster();
+        this.mouse = new THREE.Vector2();
         this.scene = options.scene;
         this.camera = options.camera;
         this.renderer = options.renderer;
-        this.meshObjects = [];
         this.stats = options.stats;
-        this.stepTime = 1;
+        this.stepTime = 100;
         this.cameraStart = {};
-        this.particles = [];
+        this.particleGroup = new ParticleGroup(this);
 
         this.renderer.setPixelRatio(window.devicePixelRatio ? window.devicePixelRatio : 1);
         this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -38,14 +39,12 @@ class Environment {
     }
 }
 
-
-
 function render(env){
     window.requestAnimationFrame(()=>{
         render(env);
     });
     //console.log(env.camera.getWorldDirection());
-    TWEEN.update();
+    // TWEEN.update();
 
     env.stats.begin();
     env.controls.update();
@@ -54,23 +53,8 @@ function render(env){
 }
 
 function animate(env){
-    env.meshObjects[0].rotation.y += 0.05;
-    env.meshObjects[0].rotation.x += 0.05;
-    env.particles[0].calcForce();
-    env.particles[0].calcAcceleration();
-    env.particles[0].calcVelocity(0.1);
-    env.particles[0].calcPosition(0.1);
-    env.particles[0].setPosition();
-    //env.camera.rotation.x += 0.01;
-    //env.meshObjects[0].rotation.z += 0.2;
-    // console.log(env.particles[0].mesh.position)
+    env.particleGroup.calculateForceAll();
+    env.particleGroup.updatePositionAll();
 }
-
-
-
-
-
-
-
 
 render(init());

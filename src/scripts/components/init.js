@@ -13,7 +13,7 @@ function init(){
     env.stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
     document.body.appendChild(env.stats.dom);
 
-    const mesh = createTestObject();
+    // const mesh = createTestObject();
 
     // const geometry = new THREE.WireframeGeometry(new THREE.TorusGeometry(10, 3, 16, 100));
     // const material = new THREE.MeshBasicMaterial({
@@ -22,8 +22,8 @@ function init(){
     // });
     // const cube = new THREE.Mesh(geometry, material);
 
-    env.scene.add(mesh);
-    env.meshObjects.push(mesh);
+    // env.scene.add(mesh);
+    // env.meshObjects.push(mesh);
 
     env.controls = new THREE.TrackballControls(env.camera, env.renderer.domElement);
     env.controls.enableDamping = true;
@@ -40,7 +40,7 @@ function init(){
     env.setAnimation(animate);
 
     const FizzyText = function() {
-        this.speed = 6;
+        this.speed = 0;
         this.resetCamera = function(){
             resetCamera(env);
         };
@@ -61,18 +61,28 @@ function init(){
     // env.scene.add( lights[ 1 ] );
     // env.scene.add( lights[ 2 ] );
 
-    // var light = new THREE.AmbientLight( 0xfff000 ); // soft white light
-    // env.scene.add( light );
+    const light = new THREE.AmbientLight( 0xffffff ); // soft white light
+    env.scene.add( light );
 
-    const directionalLight1 = new THREE.DirectionalLight( 0xffffff, 2 );
+    const directionalLight1 = new THREE.DirectionalLight( 0xffffff, 1 );
     directionalLight1.position.set( 0, 1, 0 );
     env.scene.add( directionalLight1 );
 
-    const directionalLight2 = new THREE.DirectionalLight( 0xffffff, 2 );
+    const directionalLight2 = new THREE.DirectionalLight( 0xffffff, 1 );
     directionalLight2.position.set( 0, -1, 0 );
     env.scene.add( directionalLight2 );
 
-    new Neutron(env);
+    window.addEventListener('mousemove', function(event){
+        onMouseMove(event, env);
+    }, false);
+    document.addEventListener('dblclick', function(){
+        objectClick(env)
+    }, false);
+
+
+    // new Neutron(env, new THREE.Vector3(-4,0,4));
+    new Proton(env, new THREE.Vector3(5,5,5));
+    new Electron(env, new THREE.Vector3(10,10,10));
 
 
     window.onload = function() {
@@ -89,7 +99,7 @@ function init(){
 
         setTimeout(function(){
             env.stepTime = 100;
-            env.text.speed = env.stepTime;
+            env.text.speed = 100 - env.stepTime;
             env.setAnimation(animate)
         },5000);
     };
@@ -100,8 +110,6 @@ function init(){
 
     const axes = buildAxes();
     env.scene.add(axes);
-
-
 
     return env;
 }
