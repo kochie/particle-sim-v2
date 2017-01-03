@@ -30,20 +30,40 @@ function resetCamera(env){
 
 function deselectObject(env){
     if (env.activeParticle){
-        console.log(env.activeParticle);
+        // console.log(env.activeParticle);
         env.activeParticle.mesh.remove(env.camera);
         env.activeParticle.setDefaultColour();
         env.activeParticle = undefined;
     }
 }
 
-function objectClick(env){
-    console.log(env.particleGroup.meshList);
-    env.raycaster.setFromCamera( env.mouse, env.camera );
+function objectDrag(env){
+    const intersects = getIntersects(env);
+
+    if (intersects.length > 0){
+        intersects[0].object.material.color.set( 0xfff000 );
+        document.addEventListener('mouseup', function() {
+            ///this will execute only once
+            alert('only once!');
+            intersects[0].object.particle.setDefaultColour();
+            this.removeEventListener('mouseup', arguments.callee);
+        });
+        return true;
+    } else {
+        return false;
+    }
+}
+
+function getIntersects(env) {
+    env.raycaster.setFromCamera(env.mouse, env.camera);
 
     // calculate objects intersecting the picking ray
-    const intersects = env.raycaster.intersectObjects(env.particleGroup.meshList);
-    console.log(intersects);
+    return env.raycaster.intersectObjects(env.particleGroup.meshList);
+}
+
+function objectClick(env){
+    // console.log(env.particleGroup.meshList);
+    const intersects = getIntersects(env);
 
     if (intersects.length > 0){
         // console.log('ayy');
@@ -53,6 +73,9 @@ function objectClick(env){
 
         intersects[0].object.material.color.set( 0xff0000 );
         cameraFocus(intersects[0].object, env);
+        return true;
+    } else {
+        return false;
     }
 }
 

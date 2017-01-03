@@ -5,7 +5,7 @@
  * @author Luca Antiga 	/ http://lantiga.github.io
  */
 
-    THREE.TrackballControls = function ( object, domElement ) {
+    THREE.TrackballControls = function ( object, domElement, env ) {
 
     const _this = this;
     const STATE = { NONE: - 1, ROTATE: 0, ZOOM: 1, PAN: 2, TOUCH_ROTATE: 3, TOUCH_ZOOM_PAN: 4 };
@@ -38,6 +38,8 @@
     // internals
 
     this.target = new THREE.Vector3();
+
+    this.raycaster = new THREE.Raycaster();
 
     //this.target = new THREE.Vector3().addVectors(object.position, object.getWorldDirection());
 
@@ -397,33 +399,37 @@
         event.preventDefault();
         event.stopPropagation();
 
-        if ( _state === STATE.NONE ) {
+        if (!objectDrag(env)){
+            if ( _state === STATE.NONE ) {
 
-            _state = event.button;
+                _state = event.button;
 
+            }
+
+            if ( _state === STATE.ROTATE && ! _this.noRotate ) {
+
+                _moveCurr.copy( getMouseOnCircle( event.pageX, event.pageY ) );
+                _movePrev.copy( _moveCurr );
+
+            } else if ( _state === STATE.ZOOM && ! _this.noZoom ) {
+
+                _zoomStart.copy( getMouseOnScreen( event.pageX, event.pageY ) );
+                _zoomEnd.copy( _zoomStart );
+
+            } else if ( _state === STATE.PAN && ! _this.noPan ) {
+
+                _panStart.copy( getMouseOnScreen( event.pageX, event.pageY ) );
+                _panEnd.copy( _panStart );
+
+            }
+
+            document.addEventListener( 'mousemove', mousemove, false );
+            document.addEventListener( 'mouseup', mouseup, false );
+
+            _this.dispatchEvent( startEvent );
         }
 
-        if ( _state === STATE.ROTATE && ! _this.noRotate ) {
 
-            _moveCurr.copy( getMouseOnCircle( event.pageX, event.pageY ) );
-            _movePrev.copy( _moveCurr );
-
-        } else if ( _state === STATE.ZOOM && ! _this.noZoom ) {
-
-            _zoomStart.copy( getMouseOnScreen( event.pageX, event.pageY ) );
-            _zoomEnd.copy( _zoomStart );
-
-        } else if ( _state === STATE.PAN && ! _this.noPan ) {
-
-            _panStart.copy( getMouseOnScreen( event.pageX, event.pageY ) );
-            _panEnd.copy( _panStart );
-
-        }
-
-        document.addEventListener( 'mousemove', mousemove, false );
-        document.addEventListener( 'mouseup', mouseup, false );
-
-        _this.dispatchEvent( startEvent );
 
     }
 

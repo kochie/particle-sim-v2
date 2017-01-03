@@ -25,13 +25,13 @@ function init(){
     // env.scene.add(mesh);
     // env.meshObjects.push(mesh);
 
-    env.controls = new THREE.TrackballControls(env.camera, env.renderer.domElement);
+    env.controls = new THREE.TrackballControls(env.camera, env.renderer.domElement, env);
     env.controls.enableDamping = true;
     env.controls.dampingFactor = 0.1;
     env.controls.enableZoom = false;
     env.controls.rotateSpeed = 8;
 
-    positionCamera(env, new THREE.Vector3(20,20,20));
+    positionCamera(env, new THREE.Vector3(20, 20, 20));
 
     env.cameraStart.position = env.camera.position.clone();
     env.cameraStart.target = env.controls.target.clone();
@@ -46,6 +46,9 @@ function init(){
         };
         this.moveCamera = function(){
             moveCamera(env);
+        };
+        this.placeParticle = function(){
+            placeParticle(env);
         }
     };
     // const lights = [];
@@ -76,13 +79,21 @@ function init(){
         onMouseMove(event, env);
     }, false);
     document.addEventListener('dblclick', function(){
-        objectClick(env)
+        objectClick(env);
     }, false);
 
 
+
+
     // new Neutron(env, new THREE.Vector3(-4,0,4));
-    new Proton(env, new THREE.Vector3(5,5,5));
-    new Electron(env, new THREE.Vector3(10,10,10));
+    // new Electron(env, new THREE.Vector3(-15, 0, 0));
+    // new Electron(env, new THREE.Vector3(15, 0, 0));
+    // new Proton(env, new THREE.Vector3(0, 5, 0));
+    // new Proton(env, new THREE.Vector3(3, 5, 3));
+    // new Proton(env, new THREE.Vector3(-3, 5, -3));
+
+    // randomParticles(env, 1);
+    new Proton(env, new THREE.Vector3(0,0,0), new THREE.Vector3(0.05,0.05,0.05));
 
 
     window.onload = function() {
@@ -91,6 +102,7 @@ function init(){
         env.speedController = env.gui.add(env.text, 'speed', 0, 100, 2).listen();
         env.gui.add(env.text, 'resetCamera');
         env.gui.add(env.text, 'moveCamera');
+        env.gui.add(env.text, 'placeParticle');
 
         env.speedController.onChange(function(value) {
             env.stepTime = 100 - value;

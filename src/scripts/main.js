@@ -15,11 +15,26 @@ class Environment {
         this.stepTime = 100;
         this.cameraStart = {};
         this.particleGroup = new ParticleGroup(this);
+        this.ringGroup = new RingGroup(this);
 
         this.renderer.setPixelRatio(window.devicePixelRatio ? window.devicePixelRatio : 1);
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.setClearColor( 0x000000, 1 );
         document.body.appendChild(this.renderer.domElement);
+
+        this.magneticField = new Field(
+            function(x,y,z){
+                return 1;
+            },
+            function(x,y,z){
+                return 1;
+            },
+            function(x,y,z){
+                return 1;
+            }
+        );
+
+        this.electricField = new Field();
     }
 
     setAnimation(animation){
@@ -53,7 +68,7 @@ function render(env){
 }
 
 function animate(env){
-    env.particleGroup.calculateForceAll();
+    env.particleGroup.calculateForceAll(env);
     env.particleGroup.updatePositionAll();
 }
 
