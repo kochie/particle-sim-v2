@@ -49,6 +49,9 @@ function init(){
         };
         this.placeParticle = function(){
             placeParticle(env);
+        };
+        this.stepAnimation = function(){
+            animate(env);
         }
     };
     // const lights = [];
@@ -92,8 +95,11 @@ function init(){
     // new Proton(env, new THREE.Vector3(3, 5, 3));
     // new Proton(env, new THREE.Vector3(-3, 5, -3));
 
-    // randomParticles(env, 1);
-    new Proton(env, new THREE.Vector3(0,0,0), new THREE.Vector3(0.05,0.05,0.05));
+    // randomParticles(env, 10);
+    new Proton(env, new THREE.Vector3(0,1,0), new THREE.Vector3(0,0,1));
+
+    // pattern(env);
+
 
 
     window.onload = function() {
@@ -103,6 +109,7 @@ function init(){
         env.gui.add(env.text, 'resetCamera');
         env.gui.add(env.text, 'moveCamera');
         env.gui.add(env.text, 'placeParticle');
+        env.gui.add(env.text, 'stepAnimation');
 
         env.speedController.onChange(function(value) {
             env.stepTime = 100 - value;
@@ -124,4 +131,12 @@ function init(){
     env.scene.add(axes);
 
     return env;
+}
+
+function pattern(env){
+    new Electron(env, new THREE.Vector3(-15, 0, 0));
+    new Electron(env, new THREE.Vector3(15, 0, 0));
+    new Proton(env, new THREE.Vector3(0, 5, 0));
+    new Proton(env, new THREE.Vector3(2, 5, 2));
+    new Proton(env, new THREE.Vector3(-2, 5, -2));
 }

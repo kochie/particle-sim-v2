@@ -24,13 +24,13 @@ class Environment {
 
         this.magneticField = new Field(
             function(x,y,z){
-                return 1;
+                return Math.sin(x)*y+z;
             },
             function(x,y,z){
-                return 1;
+                return Math.sin(x)*y;
             },
             function(x,y,z){
-                return 1;
+                return 0;
             }
         );
 

@@ -73,7 +73,7 @@ class ParticleGroup{
         }
         // console.log(this.particles[i-1]);
         let fieldForce = this.particles[i-1].calcForce(env);
-        console.log(fieldForce);
+        // console.log(fieldForce);
         value.add(fieldForce);
         // console.log(`Force on ${i} is [${value.x}, ${value.y}, ${value.z}]`);
         return value;
@@ -104,8 +104,8 @@ class ParticleGroup{
     updatePositionAll(){
         for (let x=0; x<this.particles.length; x++){
             this.particles[x].calcAcceleration();
-            this.particles[x].calcVelocity(0.75);
-            this.particles[x].calcPosition(0.75);
+            this.particles[x].calcPosition(0.1);
+            this.particles[x].calcVelocity(0.1);
             // console.log(`position of ${x} is [${this.particles[x].position.x}, ${this.particles[x].position.y}, ${this.particles[x].position.z}]`);
             this.particles[x].setPosition();
         }
@@ -172,16 +172,15 @@ class Particle{
         let E = env.electricField.getValue(this.position);
         let B = env.magneticField.getValue(this.position);
         let q = this.charge;
-        let v = this.velocity;
+        let v = this.velocity.clone();
         let value = new THREE.Vector3().addVectors(E, new THREE.Vector3().crossVectors(v,B)).multiplyScalar(q);
-        console.log(value);
+        // console.log(value);
         return value;
     }
 
     calcAcceleration(){
         // a = F/m
-        console.log(this.velocity);
-        this.acceleration.copy(this.force.divideScalar(this.mass));
+        this.acceleration.copy(this.force.clone().divideScalar(this.mass));
     }
 
     calcVelocity(dt){
@@ -196,6 +195,12 @@ class Particle{
     }
 
     setPosition(){
+        console.log('force: ' + this.force.toArray());
+        console.log('acceleration: ' + this.acceleration.toArray());
+        console.log('velocity: ' + this.velocity.toArray());
+        console.log('position: ' + this.position.toArray());
+        console.log('');
+
         this.mesh.position.set(this.position.x, this.position.y, this.position.z);
     }
 }
