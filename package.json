@@ -1,5 +1,5 @@
 {
-	"name": "particle-sim-v2",
+	"name": "particlez",
 	"version": "1.0.0",
 	"description": "particle simulation app build with es6 and threejs.",
 	"main": "index.js",
