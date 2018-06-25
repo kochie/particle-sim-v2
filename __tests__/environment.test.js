@@ -9,7 +9,7 @@ describe('Environment', () => {
         setPixelRatio: jest.fn(),
         setSize: jest.fn(),
         setClearColor: jest.fn(),
-        domElement: jest.fn(),
+        domElement: document.createElement('div'),
       },
       stats: jest.fn(),
     });
