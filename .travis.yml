@@ -1,5 +1,20 @@
 language: node_js
 node_js:
-  - "10"
+- '10'
 script:
-  - "npm run test"
+- npm run test
+jobs:
+  include:
+  - stage: Lint
+    node_js: node
+    script: npm run lint
+  - stage: Test & Coverage
+    script: npm run coverage
+  - stage: Build & Deploy
+    if: branch = master
+    script: echo $NOW_TOKEN && npm run build && npx now --token $NOW_TOKEN && npx
+      now alias --token $NOW_TOKEN
+env:
+  global:
+  - secure: wCmOyl7GvTpormva0FNzrKmHczqwjxjgUFQNCLdukOuWKWnq2X4JpTKsVANSxBvkreL5T8VSBy2eSyqZkcMGYPcwuP+PZ6xiP1XUdW+gz1wrRccCHYXbGP5VnFgx7U/n1XuCvZOTZQ19KLvT7LOFB0BUii0Sb901A15XLwMcMoSkLgj9ksIkHbUyp7MD/hTm0iGDPXydsrwbPAfmGOwfa25hyNA2n6tdQ6/fgNieBd1dnCJwWwjR8JyCyn4xMaQjdI2U/kW8DMJLSGhQUVSRHMuswS1ntwubdTfahtLOM5trBfYxNgDEWTSOsWXsgR4ze4eqk6ktMkUuD3/456w/1rFIhtvLtJKE0o3ijiRHzRErR9zY718ElrJYwHP3J8uiF7NbAABXWZX7YXgZRnypdMxSQTt5K1QvHT1XDdPRvXyesnv1RN6X203dPLctn4oiy6XSh4L37AwXVTW8+ms8kDdP30l0CaYyORLhIljOqA5xHeTeFjznyFwlWC7EeSZkmTwMypZ0uMinFxGBkQtj6zCZJacLVh2IBNPbki5/p7l13dyrONf0reFU/JLl72i4KLZ3xFVsafD4HNV/7z7KedSNph4lSXjlhPfqxxgESVwdyvjsrVb+SJxMK5AKI6zeGmAqBWY0ogaCLkhFOiFPx2ru6oCNtLLL2hpsvsNlSk8=
+  - secure: kjMkrDTp6OEc6glfJ2Y4jBPUlq02KYJ3zM5EdCLjCe7FWlRw7GNfLnRDcj90YLcrXSaQqH6ilsAhW+RTgLd2YnWUmMt3amHGsPaeo7NQbsstwyIus4cNsnSbB5gQl/uL1Bu3z/ME2Q9++pVUn7/aDujC/j/m7UJDwLDzeeNU5K/fdRiIBi6Q2AXZGtTbO9KiLQ3WqTEjLiTZE4m9RcLfdPg2Dzz7QIAUI9nZT9xFPEWFQKNFdB6o5D2ZIwXi1+Cz+S6Q+DgLCab+hi2PbtwE/ZjsGDaQZVXm75QZyCdBHVUAHImsQ2YcRY+w5amqyC98CZCdDQeEoxze7Fu6oOgCV73UKn5v/25IWJyIrvqHNjfACM0fprdW0jyzZXMh/iy38jJ6LPg3JpHACk2HjtkTV7BVWTVsq0IN6IY2P6OrCc4mxItCdos7VObrOda62ur+KuRVMF8dHhSfe8JCLUh/042n0dbCsWCRZFB1PhrhntUhKPlPocSrQnA4dFH0+84cpxO5Dd+5onSCAfLDv/EXpZZlc8H+RF1LqWOZOiRpXa3klSQnbfQbCaxkbGCJdKwcmutEtpLU/awDCPdDY3VKbEy3NxdQueKk7W5lk47n7Scqc7DsuAbi+/HO7nlkPQYMI/2NOAsEkJ0TtUxlBEEyyZrStqKzUaM0TupL8KETDG4=

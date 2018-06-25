@@ -67,7 +67,7 @@ export default class TrackballControls extends EventDispatcher {
 
     this.keys = [65 /* A */, 83 /* S */, 68];
 
-    // internals
+    // internal
 
     this.target = new Vector3();
     // for reset
@@ -76,10 +76,21 @@ export default class TrackballControls extends EventDispatcher {
     this.position0 = this.object.position.clone();
     this.up0 = this.object.up.clone();
 
-    this.getMouseOnScreen = this.getMouseOnScreen();
-    this.getMouseOnCircle = this.getMouseOnCircle();
+    this.getMouseOnScreen = this.getMouseOnScreen().bind(this);
+    this.getMouseOnCircle = this.getMouseOnCircle().bind(this);
     this.rotateCamera = this.rotateCamera();
     this.panCamera = this.panCamera();
+
+    this.contextmenu = this.contextmenu.bind(this);
+    this.mousedown = this.mousedown.bind(this);
+    this.mousemove = this.mousemove.bind(this);
+    this.mouseup = this.mouseup.bind(this);
+    this.mousewheel = this.mousewheel.bind(this);
+    this.touchstart = this.touchstart.bind(this);
+    this.touchend = this.touchend.bind(this);
+    this.touchmove = this.touchmove.bind(this);
+    this.keyup = this.keyup.bind(this);
+    this.keydown = this.keydown.bind(this);
 
     this.domElement.addEventListener('contextmenu', this.contextmenu, false);
     this.domElement.addEventListener('mousedown', this.mousedown, false);

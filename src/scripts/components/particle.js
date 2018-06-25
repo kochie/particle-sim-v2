@@ -56,8 +56,8 @@ export class ParticleGroup {
     const p1 = this.particles[i - 1].position.clone();
     const p2 = this.particles[j - 1].position.clone();
 
-    // const m1 = this.particles[i - 1].mass;
-    // const m2 = this.particles[j - 1].mass;
+    const m1 = this.particles[i - 1].mass;
+    const m2 = this.particles[j - 1].mass;
 
     const q1 = this.particles[i - 1].charge;
     const q2 = this.particles[j - 1].charge;
@@ -67,7 +67,8 @@ export class ParticleGroup {
     this.sumForce[this.index(i, j)] = p1
       .sub(p2)
       .normalize()
-      .multiplyScalar(q1 * q2 / r2);
+      .multiplyScalar(q1 * q2 / r2)
+      .multiplyScalar(m1 * m2 / r2);
   }
 
   calculateForceOn(i, env) {

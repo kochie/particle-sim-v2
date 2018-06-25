@@ -66,6 +66,7 @@ export default function init() {
 
   env.controls = new TrackballControls(
     env.camera,
+    env.renderer.domElement,
   );
   env.controls.enableDamping = true;
   env.controls.dampingFactor = 0.1;

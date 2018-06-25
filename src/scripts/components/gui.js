@@ -3,7 +3,7 @@
  */
 
 import { Vector3 } from 'three';
-import { Proton, Electron } from './particle';
+import { Proton, Electron, Neutron } from './particle';
 import { randInteger } from './layout';
 
 export default function placeParticle(env) {
@@ -11,7 +11,9 @@ export default function placeParticle(env) {
   // console.log(randInteger(1));
   if (randInteger(1) > 0) {
     env.addParticle(new Proton(x));
+  } else if (randInteger(1) > 0) {
+    env.addParticle(new Electron(x));
   } else {
-    env.addPArticle(new Electron(env, x));
+    env.addParticle(new Neutron(x));
   }
 }
