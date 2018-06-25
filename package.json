@@ -4,7 +4,7 @@
   "description": "particle simulation app build with es6 and threejs.",
   "main": "index.js",
   "scripts": {
-    "test": "jest",
+    "test": "jest --coverage",
     "lint": "eslint ./src --fix",
     "dev": "parcel ./src/index.html",
     "build": "rm -rf ./dist && parcel build ./src/index.html",
