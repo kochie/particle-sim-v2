@@ -3,22 +3,20 @@
  */
 
 import { Vector3 } from 'three';
-import { Electron, Proton } from './particle.js';
+import { Electron, Proton } from './particle';
+
+export const randInteger = x => Math.round(Math.random() * (2 * x) - x);
 
 export const randomParticles = (env, t) => {
-  for (let i = 0; i < t; i++) {
+  for (let i = 0; i < t; i += 1) {
     if (randInteger(t) > 0) {
-      new Electron(
-        env,
+      env.addParticle(new Electron(
         new Vector3(randInteger(t), randInteger(t), randInteger(t)),
-      );
+      ));
     } else {
-      new Proton(
-        env,
+      env.addParticle(new Proton(
         new Vector3(randInteger(t), randInteger(t), randInteger(t)),
-      );
+      ));
     }
   }
 };
-
-const randInteger = x => Math.round(Math.random() * (2 * x) - x);

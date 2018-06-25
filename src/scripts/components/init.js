@@ -12,18 +12,31 @@ import {
 } from 'three';
 import Stats from 'stats.js';
 import * as dat from 'dat.gui';
-import { Proton, Neutron, Electron } from './particle.js';
+import { Proton, Electron } from './particle';
 import {
-  cameraFocus,
-  moveCamera,
   positionCamera,
   resetCamera,
-} from './camera.js';
-import { TrackballControls } from './TrackballControls.js';
-import Environment from './environment.js';
+  objectClick,
+} from './camera';
+import placeParticle from './gui';
+import Environment from './environment';
+import TrackballControls from './TrackballControls';
+import buildAxes from './axis';
 
-const init = function () {
-  console.log('HAI');
+function animate(env) {
+  env.particleGroup.calculateForceAll(env);
+  env.particleGroup.updatePositionAll();
+}
+
+export function pattern(env) {
+  env.addParticle(new Electron(new Vector3(-15, 0, 0)));
+  env.addParticle(new Electron(new Vector3(15, 0, 0)));
+  env.addParticle(new Proton(new Vector3(0, 5, 0)));
+  env.addParticle(new Proton(new Vector3(2, 5, 2)));
+  env.addParticle(new Proton(new Vector3(-2, 5, -2)));
+}
+
+export default function init() {
   const env = new Environment({
     scene: new Scene(),
     camera: new PerspectiveCamera(
@@ -53,14 +66,13 @@ const init = function () {
 
   env.controls = new TrackballControls(
     env.camera,
-    env.renderer.domElement,
-    env,
   );
   env.controls.enableDamping = true;
   env.controls.dampingFactor = 0.1;
   env.controls.enableZoom = false;
   env.controls.rotateSpeed = 8;
 
+  // console.log(positionCamera);
   positionCamera(env, new Vector3(20, 20, 20));
 
   env.cameraStart.position = env.camera.position.clone();
@@ -69,21 +81,24 @@ const init = function () {
 
   env.setAnimation(animate);
 
-  const FizzyText = function () {
+  function FizzyText() {
     this.speed = 0;
-    this.resetCamera = function () {
+    this.resetCamera = () => {
       resetCamera(env);
     };
-    this.moveCamera = function () {
-      moveCamera(env);
+    this.moveCamera = () => {
+      env.moveCamera();
     };
-    this.placeParticle = function () {
+    this.placeParticle = () => {
       placeParticle(env);
     };
-    this.stepAnimation = function () {
+    this.stepAnimation = () => {
       animate(env);
     };
-  };
+    this.pattern = () => {
+      pattern(env);
+    };
+  }
   // const lights = [];
   // lights[ 0 ] = new THREE.PointLight( 0xffffff, 1, 0 );
   // lights[ 1 ] = new THREE.PointLight( 0xffffff, 1, 0 );
@@ -111,7 +126,7 @@ const init = function () {
   window.addEventListener(
     'mousemove',
     (event) => {
-      onMouseMove(event, env);
+      env.onMouseMove(event, env);
     },
     false,
   );
@@ -131,12 +146,12 @@ const init = function () {
   // new Proton(env, new THREE.Vector3(-3, 5, -3));
 
   // randomParticles(env, 10);
-  new Proton(env, new Vector3(0, 1, 0), new Vector3(0, 0, 1));
+  // new Proton(env, new Vector3(0, 1, 0), new Vector3(0, 0, 1));
 
   // pattern(env);
 
-  window.onload = function () {
-    console.log('Hello');
+  window.onload = () => {
+    // console.log('Hello');
     env.text = new FizzyText();
     env.gui = new dat.GUI();
     env.speedController = env.gui
@@ -146,6 +161,7 @@ const init = function () {
     env.gui.add(env.text, 'moveCamera');
     env.gui.add(env.text, 'placeParticle');
     env.gui.add(env.text, 'stepAnimation');
+    env.gui.add(env.text, 'pattern');
 
     env.speedController.onChange((value) => {
       env.stepTime = 100 - value;
@@ -162,7 +178,7 @@ const init = function () {
   window.addEventListener(
     'resize',
     () => {
-      onWindowResize(env);
+      env.onWindowResize();
     },
     false,
   );
@@ -171,14 +187,4 @@ const init = function () {
   env.scene.add(axes);
 
   return env;
-};
-
-const pattern = function (env) {
-  new Electron(env, new Vector3(-15, 0, 0));
-  new Electron(env, new Vector3(15, 0, 0));
-  new Proton(env, new Vector3(0, 5, 0));
-  new Proton(env, new Vector3(2, 5, 2));
-  new Proton(env, new Vector3(-2, 5, -2));
-};
-
-export { init, pattern };
+}

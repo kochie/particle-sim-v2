@@ -22,7 +22,6 @@ export class RingGroup {
     this.meshList.push(object.mesh);
     if (this.rings.length > 1) {
       this.sumForce.push(0);
-    } else {
     }
   }
 }

@@ -72,7 +72,7 @@ export class ParticleGroup {
 
   calculateForceOn(i, env) {
     const value = new Vector3();
-    for (let x = 1; x <= this.particles.length; x++) {
+    for (let x = 1; x <= this.particles.length; x += 1) {
       // console.log(i,x);
       value.add(this.getForceValue(i, x));
     }
@@ -93,13 +93,13 @@ export class ParticleGroup {
          [(1,2) (1,3) (2,3)]
          */
 
-    for (let i = 1; i < this.particles.length; i++) {
-      for (let j = i + 1; j <= this.particles.length; j++) {
+    for (let i = 1; i < this.particles.length; i += 1) {
+      for (let j = i + 1; j <= this.particles.length; j += 1) {
         this.updateForce(i, j);
       }
     }
 
-    for (let i = 0; i < this.particles.length; i++) {
+    for (let i = 0; i < this.particles.length; i += 1) {
       this.particles[i].force = this.calculateForceOn(i + 1, env);
     }
 
@@ -107,11 +107,10 @@ export class ParticleGroup {
   }
 
   updatePositionAll() {
-    for (let x = 0; x < this.particles.length; x++) {
+    for (let x = 0; x < this.particles.length; x += 1) {
       this.particles[x].calcAcceleration();
       this.particles[x].calcPosition(0.1);
       this.particles[x].calcVelocity(0.1);
-      // console.log(`position of ${x} is [${this.particles[x].position.x}, ${this.particles[x].position.y}, ${this.particles[x].position.z}]`);
       this.particles[x].setPosition();
     }
   }
@@ -119,7 +118,6 @@ export class ParticleGroup {
 
 export class Particle {
   constructor(
-    env,
     colour = 0xffffff,
     charge = 0,
     position = new Vector3(),
@@ -135,8 +133,8 @@ export class Particle {
     this.force = new Vector3();
     this.mesh = new Object3D();
     this.buildObject();
-    env.scene.add(this.mesh);
-    env.particleGroup.addParticle(this);
+    //    env.scene.add(this.mesh);
+    //    env.particleGroup.addParticle(this);
     this.mesh.material.color.setHex(this.colour);
   }
 
@@ -202,18 +200,18 @@ export class Particle {
   calcPosition(dt) {
     const acceleration = this.acceleration
       .clone()
-      .multiplyScalar(0.5 * Math.pow(dt, 2));
+      .multiplyScalar(0.5 * (dt ** 2));
     const speed = this.velocity.clone().multiplyScalar(dt);
     this.position.add(new Vector3().addVectors(acceleration, speed));
     // console.log(this.position);
   }
 
   setPosition() {
-    console.log(`force: ${this.force.toArray()}`);
-    console.log(`acceleration: ${this.acceleration.toArray()}`);
-    console.log(`velocity: ${this.velocity.toArray()}`);
-    console.log(`position: ${this.position.toArray()}`);
-    console.log('');
+    // console.log(`force: ${this.force.toArray()}`);
+    // console.log(`acceleration: ${this.acceleration.toArray()}`);
+    // console.log(`velocity: ${this.velocity.toArray()}`);
+    // console.log(`position: ${this.position.toArray()}`);
+    // console.log('');
 
     this.mesh.position.set(
       this.position.x,
@@ -224,19 +222,19 @@ export class Particle {
 }
 
 export class Neutron extends Particle {
-  constructor(env, position, velocity) {
-    super(env, 0xffa500, 0, position, velocity);
+  constructor(position, velocity) {
+    super(0xffa500, 0, position, velocity);
   }
 }
 
 export class Proton extends Particle {
-  constructor(env, position, velocity) {
-    super(env, 0x0000ff, 1, position, velocity);
+  constructor(position, velocity) {
+    super(0x0000ff, 1, position, velocity);
   }
 }
 
 export class Electron extends Particle {
-  constructor(env, position, velocity) {
-    super(env, 0x00ff00, -1, position, velocity);
+  constructor(position, velocity) {
+    super(0x00ff00, -1, position, velocity);
   }
 }

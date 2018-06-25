@@ -8,9 +8,31 @@ import {
   Geometry,
   LineDashedMaterial,
   LineBasicMaterial,
+  Line,
 } from 'three';
 
-export const buildAxes = () => {
+const buildAxis = (src, dst, colorHex, dashed) => {
+  const geom = new Geometry();
+  let mat;
+
+  if (dashed) {
+    mat = new LineDashedMaterial({
+      linewidth: 1,
+      color: colorHex,
+      dashSize: 5,
+      gapSize: 5,
+    });
+  } else {
+    mat = new LineBasicMaterial({ linewidth: 1, color: colorHex });
+  }
+
+  geom.vertices.push(src.clone());
+  geom.vertices.push(dst.clone());
+
+  return new Line(geom, mat);
+};
+
+export default function buildAxes() {
   const axes = new Object3D();
   axes.add(
     buildAxis(
@@ -61,25 +83,4 @@ export const buildAxes = () => {
     ),
   ); // -Z
   return axes;
-};
-
-const buildAxis = (src, dst, colorHex, dashed) => {
-  const geom = new Geometry();
-  let mat;
-
-  if (dashed) {
-    mat = new LineDashedMaterial({
-      linewidth: 1,
-      color: colorHex,
-      dashSize: 5,
-      gapSize: 5,
-    });
-  } else {
-    mat = new LineBasicMaterial({ linewidth: 1, color: colorHex });
-  }
-
-  geom.vertices.push(src.clone());
-  geom.vertices.push(dst.clone());
-
-  return new Line(geom, mat);
-};
+}

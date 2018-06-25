@@ -1,0 +1,13 @@
+{
+	"type": "static",
+	"name": "particles",
+	"static": {
+		"public": "./dist"
+	},
+	"alias": [
+		"3body.now.sh"
+	],
+	"files": [
+		"./dist"
+	]
+}

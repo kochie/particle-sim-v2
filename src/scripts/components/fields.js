@@ -4,21 +4,15 @@
 
 import { Vector3 } from 'three';
 
-export class Field {
+export default class Field {
   constructor(
-    fn_x = function (x, y, z) {
-      return 0;
-    },
-    fn_y = function (x, y, z) {
-      return 0;
-    },
-    fn_z = function (x, y, z) {
-      return 0;
-    },
+    fnX = () => 0,
+    fnY = () => 0,
+    fnZ = () => 0,
   ) {
-    this.fn_x = fn_x;
-    this.fn_y = fn_y;
-    this.fn_z = fn_z;
+    this.fn_x = fnX;
+    this.fn_y = fnY;
+    this.fn_z = fnZ;
   }
 
   getValue(position) {

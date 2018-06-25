@@ -3,7 +3,7 @@
  * https://threejs.org/docs/scenes/geometry-browser.html#TorusKnotBufferGeometry
  */
 
-import { init } from './components/init';
+import init from './components/init';
 
 function render(env) {
   window.requestAnimationFrame(() => {
@@ -16,11 +16,6 @@ function render(env) {
   env.controls.update();
   env.renderer.render(env.scene, env.camera);
   env.stats.end();
-}
-
-function animate(env) {
-  env.particleGroup.calculateForceAll(env);
-  env.particleGroup.updatePositionAll();
 }
 
 render(init());

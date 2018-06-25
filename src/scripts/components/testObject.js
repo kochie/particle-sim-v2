@@ -9,9 +9,12 @@ import {
   WireframeGeometry,
   LineBasicMaterial,
   MeshPhongMaterial,
+  Mesh,
+  FlatShading,
+  DoubleSide,
 } from 'three';
 
-export function createTestObject() {
+export default function createTestObject() {
   const mesh = new Object3D();
 
   const geometry = new TorusBufferGeometry(10, 3, 50, 50);
@@ -33,8 +36,8 @@ export function createTestObject() {
       new MeshPhongMaterial({
         color: 0x156289,
         emissive: 0x072534,
-        side: THREE.DoubleSide,
-        shading: THREE.FlatShading,
+        side: DoubleSide,
+        shading: FlatShading,
       }),
     ),
   );
