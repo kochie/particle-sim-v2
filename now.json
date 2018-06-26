@@ -6,8 +6,5 @@
 	},
 	"alias": [
 		"3body.now.sh"
-	],
-	"files": [
-		"./dist"
 	]
 }
