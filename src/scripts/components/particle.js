@@ -17,6 +17,13 @@ export class ParticleGroup {
     this.meshList = [];
     this.particles = [];
     this.sumForce = [];
+    this.gravity = true;
+    this.electro = true;
+    this.boundaryBox = true;
+  }
+
+  toggleBoundary() {
+    this.boundaryBox = !this.boundaryBox;
   }
 
   index(i, j) {
@@ -30,6 +37,10 @@ export class ParticleGroup {
       this.sumForce.push(0);
     }
     // console.log(`sumForce Length: ${this.sumForce.length}`);
+  }
+
+  removeParticle(particle) {
+    // tihs.particles.
   }
 
   getForceValue(i, j) {
@@ -64,12 +75,16 @@ export class ParticleGroup {
     const q1 = this.particles[i - 1].charge;
     const q2 = this.particles[j - 1].charge;
 
+    const G = this.gravity;
+    const K = this.electro;
+    // console.log(this.gravity, G, this.electro, K);
+
     const r2 = p1.distanceToSquared(p2);
     // console.log(`force for index ${this.index(i,j)} is [${value.x}, ${value.y}, ${value.z}]`);
     this.sumForce[this.index(i, j)] = p1
       .sub(p2)
       .normalize()
-      .multiplyScalar(((q1 * q2) - (m1 * m2)) / r2);
+      .multiplyScalar(((q1 * q2 * K) - (m1 * m2 * G)) / r2);
   }
 
   calculateForceOn(i, env) {
@@ -112,7 +127,7 @@ export class ParticleGroup {
     for (let x = 0; x < this.particles.length; x += 1) {
       this.particles[x].calcAcceleration();
       this.particles[x].calcKinematics(0.1);
-      this.particles[x].boundaryBox(50);
+      if (this.boundaryBox) this.particles[x].boundaryBox(50);
       this.particles[x].setPosition();
     }
   }
@@ -234,24 +249,45 @@ export class Particle {
     }
   }
 
-  boundaryBox(size) {
-    if (this.position.x > size) {
-      this.position.x = (this.position.x % size) - size;
-    }
-    if (this.position.x < -size) {
-      this.position.x = (this.position.x % size) + size;
-    }
-    if (this.position.y > size) {
-      this.position.y = (this.position.y % size) - size;
-    }
-    if (this.position.y < -size) {
-      this.position.y = (this.position.y % size) + size;
-    }
-    if (this.position.z > size) {
-      this.position.z = (this.position.z % size) - size;
-    }
-    if (this.position.z < -size) {
-      this.position.z = (this.position.z % size) + size;
+  boundaryBox(size, type = 'closed', env) {
+    switch (type) {
+      case 'closed': {
+        if (this.position.x > size) {
+          this.position.x = (this.position.x % size) - size;
+        }
+        if (this.position.x < -size) {
+          this.position.x = (this.position.x % size) + size;
+        }
+        if (this.position.y > size) {
+          this.position.y = (this.position.y % size) - size;
+        }
+        if (this.position.y < -size) {
+          this.position.y = (this.position.y % size) + size;
+        }
+        if (this.position.z > size) {
+          this.position.z = (this.position.z % size) - size;
+        }
+        if (this.position.z < -size) {
+          this.position.z = (this.position.z % size) + size;
+        }
+        break;
+      }
+      case 'open': {
+        if (
+          this.position.x > size 
+          || this.position.y > size 
+          || this.position.z > size 
+          || this.position.x < -size 
+          || this.position.y < -size 
+          || this.position.z < -size
+        ) {
+          env.s;
+        }
+        break;
+      }
+      default: {
+        break;
+      }
     }
   }
 
