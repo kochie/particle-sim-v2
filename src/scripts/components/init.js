@@ -12,7 +12,7 @@ import {
 } from 'three';
 import Stats from 'stats.js';
 import * as dat from 'dat.gui';
-import { Proton, Electron } from './particle';
+import { Proton, Electron, Neutron } from './particle';
 import {
   positionCamera,
   resetCamera,
@@ -24,8 +24,11 @@ import TrackballControls from './TrackballControls';
 import buildAxes from './axis';
 
 function animate(env) {
+  // const t1 = performance.now();
   env.particleGroup.calculateForceAll(env);
   env.particleGroup.updatePositionAll();
+  // const t2 = performance.now();
+  // console.log(`Calculation speed ${t2 - t1}`);
 }
 
 export function pattern(env) {
@@ -34,6 +37,14 @@ export function pattern(env) {
   env.addParticle(new Proton(new Vector3(0, 5, 0)));
   env.addParticle(new Proton(new Vector3(2, 5, 2)));
   env.addParticle(new Proton(new Vector3(-2, 5, -2)));
+}
+
+export function threeBody(env) {
+  const p1 = 0.347111;
+  const p2 = 0.532728;
+  env.addParticle(new Neutron(new Vector3(-1, 0, 0), new Vector3(p1, p2, 0)));
+  env.addParticle(new Neutron(new Vector3(1, 0, 0), new Vector3(p1, p2, 0)));
+  env.addParticle(new Neutron(new Vector3(0, 0, 0), new Vector3(-2 * p1, -2 * p2)));
 }
 
 export default function init() {
@@ -99,6 +110,9 @@ export default function init() {
     this.pattern = () => {
       pattern(env);
     };
+    this.threeBody = () => {
+      threeBody(env);
+    };
   }
   // const lights = [];
   // lights[ 0 ] = new THREE.PointLight( 0xffffff, 1, 0 );
@@ -163,6 +177,7 @@ export default function init() {
     env.gui.add(env.text, 'placeParticle');
     env.gui.add(env.text, 'stepAnimation');
     env.gui.add(env.text, 'pattern');
+    env.gui.add(env.text, 'threeBody');
 
     env.speedController.onChange((value) => {
       env.stepTime = 100 - value;

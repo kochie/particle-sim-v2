@@ -10,6 +10,8 @@ import {
   MeshBasicMaterial,
 } from 'three';
 
+const geometry = new SphereGeometry(1, 32, 32);
+
 export class ParticleGroup {
   constructor() {
     this.meshList = [];
@@ -67,8 +69,7 @@ export class ParticleGroup {
     this.sumForce[this.index(i, j)] = p1
       .sub(p2)
       .normalize()
-      .multiplyScalar(q1 * q2 / r2)
-      .multiplyScalar(m1 * m2 / r2);
+      .multiplyScalar(((q1 * q2) - (m1 * m2)) / r2);
   }
 
   calculateForceOn(i, env) {
@@ -91,7 +92,7 @@ export class ParticleGroup {
          |(2,1) (2,2) (2,3)|
          |(3,1) (3,2) (3,3)|
 
-         [(1,2) (1,3) (2,3)]
+         [(1,2) (1,3) (2,3)]gravity
          */
 
     for (let i = 1; i < this.particles.length; i += 1) {
@@ -110,8 +111,8 @@ export class ParticleGroup {
   updatePositionAll() {
     for (let x = 0; x < this.particles.length; x += 1) {
       this.particles[x].calcAcceleration();
-      this.particles[x].calcPosition(0.1);
-      this.particles[x].calcVelocity(0.1);
+      this.particles[x].calcPosition(0.2);
+      this.particles[x].calcVelocity(0.2);
       this.particles[x].setPosition();
     }
   }
@@ -148,7 +149,6 @@ export class Particle {
   }
 
   buildObject() {
-    const geometry = new SphereGeometry(1, 32, 32);
     this.mesh = new Mesh(
       geometry,
       new MeshBasicMaterial({ color: this.colour, wireframe: true }),

@@ -25,6 +25,7 @@
   "homepage": "https://github.com/kochie/particle-sim-v2#readme",
   "dependencies": {
     "dat.gui": "^0.7.2",
+    "moment": "^2.22.2",
     "stats.js": "^0.17.0",
     "three": "^0.93.0"
   },
