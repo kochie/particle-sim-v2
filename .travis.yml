@@ -1,20 +1,16 @@
 language: node_js
-cache:
-  bundler: true
 node_js:
 - '10'
-- '9'
-- '8'
+cache:
+  bundler: true
 jobs:
   include:
-  - stage: Lint
-    script: npm run lint
-  - stage: Test & Coverage
-    script: npm run coverage
-  - stage: Build & Deploy
-    if: branch = master
-    script: echo $NOW_TOKEN && npm run build && npx now --token $NOW_TOKEN && npx
-      now alias --token $NOW_TOKEN
+    - stage: Lint
+      script: npm run lint
+    - stage: Test & Coverage
+      script: npm run coverage
+    - stage: Build & Deploy
+      script: npm run build && npm run deploy
 env:
-  matrix:
-    secure: okj+zMC38Q4dStbpxVaoZwqllhNCCrk7smXtaIuPUGF1bsu3z28HOY037eakWP2ZN01td/Ixhv8gSf5Vx82M8S9Hie0X5xSJbrs6yt6+a3TDo0T1qWDvnKA1Fokk/u66luIagrZplMTfF7bSSyssL/k4p4k3ZOJOhIZSJ9E+zCtxMagJXXzbmglcmE3KHKaSpPH0m3YAfzBBHJUZ+0bxHj7PpczKscO0NJBpNLEE+a8pDx3CWRUf4k58Fx0bJrzKuxEC/6Qv0zUFWnmEeYj2eFRxz+RPMRNh/srSV+z5OrH+js9pOMmVRu5kv77+Em0VuLaTG9sC8HsplMA22nhcJMnO/dC0Z3t0HUop3G3kCXveSVC8Bak49rqnGZn/7YPaVpllfieUlfphQLXUgmbbE7Db0A0uG3vRqvapBrmljdF92eXAZYssQdP880y2/8uh/aj4wvxRlRGj4ZAvry3P6yNo6B3/GMmN1uNBveTIIUJsCnp0Uvpc/iWGWzo4SEEaveSongBBQYuOUuLo3h+fEqgLHnYpWKbSnUxbjYwZBbbOxrgCJQfXyEgsiu2hW19Id3AdBr7SdkvZtgqC1HibV/9XZvrJH4HoZ00edXiDM6QOM6mMBhLJSgcFaFyxBorVT7VIb01FliNqd2sT5QQdxgaJfQdOKAfK7aHJqJJHTGs=
+  global:
+    secure: G+1WTQEBxZRsLIyEEf4HcCIJVH4+60jAMmL/QwT8+qFmwSOpeLZUl/jq3mNuOrrpP3GNZLS6tZOksR4cKzqaNYEnBJnL8RKDEHiSGDX/JG1IteQU8cYWCWyeFFMjWz3c8EOZzcE9TqrppemxKUZWt1VHDRyOb3yBKwjdndThwUHG0qs1mjioLDJBMRNADSyKZBprWuVasZIZjYrV6Kya3CNkacWhuLAVyejBDEB/XK3CMpy0gMawuw3HP3wfAQtoGf/XR4fQB7M7ROMJa8L53DhhmWrkgF/YevipolSHtctUrMvPifY86I9jvWuMXQYShK5yqxmi6bcy3brItSJxHSlb0HxDZ13gF1m3jWVfJbgBN4VXTDdE/QDQYUGwAghaH+ENZv9Fv+86l55ogDKg8iUBcFTDuPtz2w+HJFU65PLV8YLBDfv7URpRAHZd15iNbXlv+vvN8k2WyB+c3cgag4itR3b7B9Xa6AvEFC7AAbiS4xM/NhVrD9DJLuRN2N7MDzVUOvpnCCz6JPv7WQwMYe+k/0RKn/c+g7OUdtkZIaBn/re9eSvu9t0tY3ZRG4r7SsBifegSqJse1CVf+svKIQTIb3mdXyEy1OeURRljyDry2KPzHStPSlaBeyq4idSDHtc3uT85uCX2fHueGdWTFC+rWSfvLX2qa7T+E8sz/I4=
