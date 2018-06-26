@@ -111,8 +111,8 @@ export class ParticleGroup {
   updatePositionAll() {
     for (let x = 0; x < this.particles.length; x += 1) {
       this.particles[x].calcAcceleration();
-      this.particles[x].calcPosition(0.2);
-      this.particles[x].calcVelocity(0.2);
+      this.particles[x].calcKinematics(0.1);
+      this.particles[x].boundaryBox(50);
       this.particles[x].setPosition();
     }
   }
@@ -194,17 +194,65 @@ export class Particle {
     this.acceleration.copy(this.force.clone().divideScalar(this.mass));
   }
 
-  calcVelocity(dt) {
-    this.velocity.addScaledVector(this.acceleration, dt);
+  calcKinematics(dt, method = 'euler') {
+    switch (method) {
+      case 'euler': {
+        this.velocity.addScaledVector(this.acceleration, dt);
+        const a = this.acceleration.clone().multiplyScalar(0.5 * (dt ** 2));
+        const s = this.velocity.clone().multiplyScalar(dt);
+        this.position.add(a).add(s);
+        break;
+      }
+      case 'rk4': {
+        // debugger // eslint-disable-line
+        const r = this.position;
+        const v = this.velocity;
+        const a = this.acceleration;
+
+        const kv1 = a.clone().multiply(r);
+        const kr1 = v.clone();
+
+        const kv2 = a.clone().multiply(r.clone().add(kr1.clone().multiplyScalar(dt / 2)));
+        const kr2 = v.clone().multiply(kv1).multiplyScalar(dt / 2);
+
+        const kv3 = a.clone().multiply(r.clone().add(kr2.clone().multiplyScalar(dt / 2)));
+        const kr3 = v.clone().multiply(kv2).multiplyScalar(dt / 2);
+
+        const kv4 = a.clone().multiply(r.clone().add(kr3.clone().multiplyScalar(dt)));
+        const kr4 = v.clone().multiply(kv3).multiplyScalar(dt);
+
+        const hv = kv1.add(kv2.multiplyScalar(2)).add(kv3.multiplyScalar(2)).add(kv4);
+        const hp = kr1.add(kr2.multiplyScalar(2)).add(kr3.multiplyScalar(2)).add(kr4);
+
+        this.velocity.add(hv.multiplyScalar(dt / 6));
+        this.position.add(hp.multiplyScalar(dt / 6));
+        break;
+      }
+      default: {
+        break;
+      }
+    }
   }
 
-  calcPosition(dt) {
-    const acceleration = this.acceleration
-      .clone()
-      .multiplyScalar(0.5 * (dt ** 2));
-    const speed = this.velocity.clone().multiplyScalar(dt);
-    this.position.add(new Vector3().addVectors(acceleration, speed));
-    // console.log(this.position);
+  boundaryBox(size) {
+    if (this.position.x > size) {
+      this.position.x = (this.position.x % size) - size;
+    }
+    if (this.position.x < -size) {
+      this.position.x = (this.position.x % size) + size;
+    }
+    if (this.position.y > size) {
+      this.position.y = (this.position.y % size) - size;
+    }
+    if (this.position.y < -size) {
+      this.position.y = (this.position.y % size) + size;
+    }
+    if (this.position.z > size) {
+      this.position.z = (this.position.z % size) - size;
+    }
+    if (this.position.z < -size) {
+      this.position.z = (this.position.z % size) + size;
+    }
   }
 
   setPosition() {
