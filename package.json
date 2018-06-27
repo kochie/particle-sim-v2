@@ -4,12 +4,12 @@
   "description": "particle simulation app build with es6 and threejs.",
   "main": "index.js",
   "scripts": {
+    "start": "serve ./dist --single",
     "test": "jest --coverage",
     "lint": "eslint ./src --fix",
     "dev": "parcel ./src/index.html",
     "build": "rm -rf ./dist && parcel build ./src/index.html",
-    "deploy": "now && now alias",
-    "start": "webpack-dev-server --content-base dist",
+    "deploy": "now --token $NOW_TOKEN && now alias --token $NOW_TOKEN",
     "validate": "npm ls",
     "coverage": "jest --coverage --coverageReporters=text-lcov | coveralls"
   },
@@ -26,6 +26,7 @@
   "dependencies": {
     "dat.gui": "^0.7.2",
     "moment": "^2.22.2",
+    "serve": "^9.1.0",
     "stats.js": "^0.17.0",
     "three": "^0.93.0"
   },
@@ -39,6 +40,7 @@
     "eslint-plugin-import": "^2.13.0",
     "jest": "^23.1.0",
     "node-sass": "^4.9.0",
+    "now": "^11.2.4",
     "parcel-bundler": "^1.9.2",
     "postcss-modules": "^1.1.0"
   },
