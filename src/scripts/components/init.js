@@ -126,7 +126,7 @@ export default function init() {
     this.gravity = 1;
     this.electro = 1;
     this.boundaryVisibility = true;
-    this.boundary = true;
+    this.boundaryType = 'closed';
     this.boundarySize = 50;
   }
   // const lights = [];
@@ -199,9 +199,9 @@ export default function init() {
     env.gui.add(env.text, 'threeBody');
     env.gui.add(env.text, 'gravity', 0, 10).onChange((value) => { env.particleGroup.gravity = value; });
     env.gui.add(env.text, 'electro', 0, 10).onChange((value) => { env.particleGroup.electro = value; });
-    env.gui.add(env.text, 'boundaryVisibility').onChange(() => env.toggleBoundary());
-    env.gui.add(env.text, 'boundary').onChange(() => env.particleGroup.toggleBoundary());
-    env.gui.add(env.text, 'boundarySize', 1, 500, 1).onChange(value => env.boundarySize(value));
+    env.gui.add(env.text, 'boundaryVisibility').onChange(() => env.particleGroup.toggleBoundaryVisibility());
+    env.gui.add(env.text, 'boundarySize', 1, 500, 1).onChange(value => env.particleGroup.changeBoundarySize(value));
+    env.gui.add(env.text, 'boundaryType', ['none', 'closed', 'delete']).onChange(value => env.particleGroup.changeBoundaryType(value));
 
     env.speedController.onChange((value) => {
       env.stepTime = 100 - value;

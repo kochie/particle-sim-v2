@@ -7,23 +7,59 @@ import {
   Object3D,
   SphereGeometry,
   Mesh,
+  BoxGeometry,
   MeshBasicMaterial,
 } from 'three';
+import { newId } from './tools';
 
 const geometry = new SphereGeometry(1, 32, 32);
 
 export class ParticleGroup {
-  constructor() {
+  constructor(env) {
     this.meshList = [];
     this.particles = [];
     this.sumForce = [];
     this.gravity = true;
     this.electro = true;
-    this.boundaryBox = true;
+    this.boundary = {
+      type: 'closed',
+      size: 50,
+      mesh: null,
+      visible: true,
+    };
+    this.env = env;
+    this.drawBoundary();
   }
 
-  toggleBoundary() {
-    this.boundaryBox = !this.boundaryBox;
+  toggleBoundaryVisibility() {
+    this.boundary.visible = !this.boundary.visible;
+    this.redrawBoundary();
+  }
+
+  drawBoundary() {
+    if (this.boundary.type === 'none' || !this.boundary.visible) {
+      return;
+    }
+    const size = this.boundary.size * 2;
+    const boundaryGeometry = new BoxGeometry(size, size, size);
+    const material = new MeshBasicMaterial({ color: 0x0ffff0, wireframe: true });
+    this.boundary.mesh = new Mesh(boundaryGeometry, material);
+    this.env.scene.add(this.boundary.mesh);
+  }
+
+  changeBoundaryType(type) {
+    this.boundary.type = type;
+    this.redrawBoundary();
+  }
+
+  changeBoundarySize(size) {
+    this.boundary.size = size;
+    this.redrawBoundary();
+  }
+
+  redrawBoundary() {
+    this.env.scene.remove(this.boundary.mesh);
+    this.drawBoundary();
   }
 
   index(i, j) {
@@ -40,7 +76,10 @@ export class ParticleGroup {
   }
 
   removeParticle(particle) {
-    // tihs.particles.
+    const index = this.particles.indexOf(particle);
+    this.particles.splice(index, 1);
+    this.meshList.splice(index, 1);
+    this.sumForce.pop();
   }
 
   getForceValue(i, j) {
@@ -124,12 +163,16 @@ export class ParticleGroup {
   }
 
   updatePositionAll() {
-    for (let x = 0; x < this.particles.length; x += 1) {
+    for (let x = this.particles.length - 1; x >= 0; x -= 1) {
       this.particles[x].calcAcceleration();
       this.particles[x].calcKinematics(0.1);
-      if (this.boundaryBox) this.particles[x].boundaryBox(50);
-      this.particles[x].setPosition();
+      this.particles[x].boundaryBox(
+        this.boundary.size,
+        this.boundary.type,
+        this.env,
+      );
     }
+    this.particles.forEach(particle => particle.setPosition());
   }
 }
 
@@ -150,6 +193,7 @@ export class Particle {
     this.force = new Vector3();
     this.mesh = new Object3D();
     this.buildObject();
+    this.id = newId();
     //    env.scene.add(this.mesh);
     //    env.particleGroup.addParticle(this);
     this.mesh.material.color.setHex(this.colour);
@@ -272,16 +316,16 @@ export class Particle {
         }
         break;
       }
-      case 'open': {
+      case 'delete': {
         if (
-          this.position.x > size 
-          || this.position.y > size 
-          || this.position.z > size 
-          || this.position.x < -size 
-          || this.position.y < -size 
+          this.position.x > size
+          || this.position.y > size
+          || this.position.z > size
+          || this.position.x < -size
+          || this.position.y < -size
           || this.position.z < -size
         ) {
-          env.s;
+          env.removeParticle(this);
         }
         break;
       }

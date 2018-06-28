@@ -1,5 +1,5 @@
 import {
-  Raycaster, Vector2, Vector3, BoxGeometry, MeshBasicMaterial, Mesh,
+  Raycaster, Vector2, Vector3,
 } from 'three';
 import { ParticleGroup } from './particle';
 import { RingGroup } from './torus';
@@ -32,25 +32,12 @@ export default class Environment {
     );
 
     this.electricField = new Field();
-    this.drawBoundary();
   }
 
-  drawBoundary() {
-    const geometry = new BoxGeometry(100, 100, 100);
-    const material = new MeshBasicMaterial({ color: 0x0ffff0, wireframe: true });
-    this.boundary = { mesh: new Mesh(geometry, material), enabled: true };
-    this.scene.add(this.boundary.mesh);
-    // cube.position.set(-50, -50, -50);
-  }
 
-  toggleBoundary() {
-    if (this.boundary.enabled) {
-      this.scene.remove(this.boundary.mesh);
-      this.boundary.enabled = false;
-    } else {
-      this.scene.add(this.boundary.mesh);
-      this.boundary.enabled = true;
-    }
+  removeParticle(particle) {
+    this.scene.remove(particle.mesh);
+    this.particleGroup.removeParticle(particle);
   }
 
   setAnimation(animation) {
