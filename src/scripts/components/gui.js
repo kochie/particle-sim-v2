@@ -7,7 +7,8 @@ import { Proton, Electron, Neutron } from './particle';
 import { randInteger } from './layout';
 
 export default function placeParticle(env, type = 'random') {
-  const x = new Vector3(randInteger(20), randInteger(20), randInteger(20));
+  const { size } = env.particleGroup.boundary;
+  const x = new Vector3(randInteger(size), randInteger(size), randInteger(size));
   // console.log(randInteger(1));
 
   switch (type) {
