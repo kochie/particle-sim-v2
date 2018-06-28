@@ -105,7 +105,7 @@ export default function init() {
     this.placeParticle = () => {
       placeParticle(env);
     };
-    this.placeSppedyParticle = () => {
+    this.placeSpeedyParticle = () => {
       placeParticle(env, { speedy: true });
     };
     this.neutron = () => {
