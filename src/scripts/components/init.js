@@ -105,14 +105,17 @@ export default function init() {
     this.placeParticle = () => {
       placeParticle(env);
     };
+    this.placeSppedyParticle = () => {
+      placeParticle(env, { speedy: true });
+    };
     this.neutron = () => {
-      placeParticle(env, 'neutron');
+      placeParticle(env, { type: 'neutron' });
     };
     this.electron = () => {
-      placeParticle(env, 'electron');
+      placeParticle(env, { type: 'electron' });
     };
     this.proton = () => {
-      placeParticle(env, 'proton');
+      placeParticle(env, { type: 'proton' });
     };
     this.stepAnimation = () => {
       animate(env);
@@ -191,6 +194,7 @@ export default function init() {
     env.gui.add(env.text, 'resetCamera');
     env.gui.add(env.text, 'moveCamera');
     env.gui.add(env.text, 'placeParticle');
+    env.gui.add(env.text, 'placeSpeedyParticle');
     env.gui.add(env.text, 'neutron');
     env.gui.add(env.text, 'electron');
     env.gui.add(env.text, 'proton');
