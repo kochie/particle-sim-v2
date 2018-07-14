@@ -2,7 +2,7 @@ import { Vector3 } from 'three';
 
 import {
   Particle, ParticleGroup, Electron,
-} from '../src/scripts/components/particle';
+} from '../particle';
 
 describe('Paticle object', () => {
   it('should create a particle', () => {
@@ -11,12 +11,17 @@ describe('Paticle object', () => {
   });
 });
 
-const init = () => new ParticleGroup();
+const env = {
+  scene: {
+    add: jest.fn(),
+  },
+};
+const init = () => new ParticleGroup(env);
 const zero = new Vector3(0, 0, 0);
 
 describe('Particle group', () => {
-  it('should make a paricle group', () => {
-    const pg = new ParticleGroup();
+  it('should make a particle group', () => {
+    const pg = new ParticleGroup(env);
     expect(pg).toBeDefined();
   });
 
@@ -31,7 +36,7 @@ describe('Particle group', () => {
     pg.calcCenterOfMass();
     expect(pg.centerOfMass).toEqual(new Vector3(0, 0, 0));
 
-    pg = new ParticleGroup();
+    pg = new ParticleGroup(env);
     pg.addParticle(new Electron(new Vector3(1, 0, 0)));
     pg.addParticle(new Electron(new Vector3(0, 1, 0)));
     pg.addParticle(new Electron(new Vector3(0, 0, 1)));
