@@ -1,4 +1,4 @@
-import { Particle } from '../src/scripts/components/particle';
+import { Particle } from '../particle';
 
 describe('particles', () => {
   it('should create a particle', () => {
