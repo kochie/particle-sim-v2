@@ -7,7 +7,7 @@ import {
   PerspectiveCamera,
   Scene,
   Vector3,
-  AmbientLight,
+  // AmbientLight,
   DirectionalLight,
 } from 'three';
 import Stats from 'stats.js';
@@ -47,7 +47,7 @@ export function threeBody(env) {
   env.addParticle(new Neutron(new Vector3(0, 0, 0), new Vector3(-2 * p1, -2 * p2)));
 }
 
-export default function init() {
+export default function init(canvasElement) {
   const env = new Environment({
     scene: new Scene(),
     camera: new PerspectiveCamera(
@@ -59,6 +59,8 @@ export default function init() {
     renderer: new WebGLRenderer({ antialias: true }),
     stats: new Stats(),
   });
+
+  canvasElement.appendChild(env.renderer.domElement);
 
   env.stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
   document.body.appendChild(env.stats.dom);
@@ -145,16 +147,16 @@ export default function init() {
   // env.scene.add( lights[ 1 ] );
   // env.scene.add( lights[ 2 ] );
 
-  const light = new AmbientLight(0xffffff); // soft white light
-  env.scene.add(light);
+  // const light = new AmbientLight(0xffffff); // soft white light
+  // env.scene.add(light);
 
   const directionalLight1 = new DirectionalLight(0xffffff, 1);
   directionalLight1.position.set(0, 1, 0);
-  env.scene.add(directionalLight1);
+  // env.scene.add(directionalLight1);
 
   const directionalLight2 = new DirectionalLight(0xffffff, 1);
   directionalLight2.position.set(0, -1, 0);
-  env.scene.add(directionalLight2);
+  // env.scene.add(directionalLight2);
 
   window.addEventListener(
     'mousemove',
