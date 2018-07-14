@@ -1,4 +1,4 @@
-import Environment from '../src/scripts/components/environment';
+import Environment from '../environment';
 
 describe('Environment', () => {
   it('should create class', () => {

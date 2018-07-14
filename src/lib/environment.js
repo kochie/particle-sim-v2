@@ -21,7 +21,6 @@ export default class Environment {
     );
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.setClearColor(0x000000, 1);
-    document.body.appendChild(this.renderer.domElement);
 
     this.magneticField = new Field(
       // (x, y, z) => Math.sin(x) * y + z,
