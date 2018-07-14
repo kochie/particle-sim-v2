@@ -54,7 +54,7 @@ export default function init(canvasElement) {
       75,
       window.innerWidth / window.innerHeight,
       0.1,
-      1000,
+      10000,
     ),
     renderer: new WebGLRenderer({ antialias: true }),
     stats: new Stats(),
@@ -96,6 +96,7 @@ export default function init(canvasElement) {
   env.setAnimation(animate);
 
   function FizzyText() {
+    this.particleCount = env.particleGroup.particles.length.toString();
     this.speed = 0;
     this.resetCamera = () => {
       resetCamera(env);
@@ -106,6 +107,18 @@ export default function init(canvasElement) {
     this.placeParticle = () => {
       placeParticle(env);
     };
+    this.placeSpeedyParticle = () => {
+      placeParticle(env, { speedy: true });
+    };
+    this.neutron = () => {
+      placeParticle(env, { type: 'neutron' });
+    };
+    this.electron = () => {
+      placeParticle(env, { type: 'electron' });
+    };
+    this.proton = () => {
+      placeParticle(env, { type: 'proton' });
+    };
     this.stepAnimation = () => {
       animate(env);
     };
@@ -115,6 +128,11 @@ export default function init(canvasElement) {
     this.threeBody = () => {
       threeBody(env);
     };
+    this.gravity = 1;
+    this.electro = 1;
+    this.boundaryVisibility = true;
+    this.boundaryType = 'closed';
+    this.boundarySize = 50;
   }
   // const lights = [];
   // lights[ 0 ] = new THREE.PointLight( 0xffffff, 1, 0 );
@@ -171,26 +189,36 @@ export default function init(canvasElement) {
     // console.log('Hello');
     env.text = new FizzyText();
     env.gui = new dat.GUI();
+    env.gui.add(env.text, 'particleCount').listen();
     env.speedController = env.gui
       .add(env.text, 'speed', 0, 100, 2)
       .listen();
     env.gui.add(env.text, 'resetCamera');
     env.gui.add(env.text, 'moveCamera');
     env.gui.add(env.text, 'placeParticle');
+    env.gui.add(env.text, 'placeSpeedyParticle');
+    env.gui.add(env.text, 'neutron');
+    env.gui.add(env.text, 'electron');
+    env.gui.add(env.text, 'proton');
     env.gui.add(env.text, 'stepAnimation');
     env.gui.add(env.text, 'pattern');
     env.gui.add(env.text, 'threeBody');
+    env.gui.add(env.text, 'gravity', 0, 10).onChange((value) => { env.particleGroup.gravity = value; });
+    env.gui.add(env.text, 'electro', 0, 10).onChange((value) => { env.particleGroup.electro = value; });
+    env.gui.add(env.text, 'boundaryVisibility').onChange(() => env.particleGroup.toggleBoundaryVisibility());
+    env.gui.add(env.text, 'boundarySize', 1, 500, 1).onChange(value => env.particleGroup.changeBoundarySize(value));
+    env.gui.add(env.text, 'boundaryType', ['none', 'closed', 'delete']).onChange(value => env.particleGroup.changeBoundaryType(value));
 
     env.speedController.onChange((value) => {
       env.stepTime = 100 - value;
       env.setAnimation(animate);
     });
 
-    setTimeout(() => {
-      env.stepTime = 100;
-      env.text.speed = 100 - env.stepTime;
-      env.setAnimation(animate);
-    }, 5000);
+    // setTimeout(() => {
+    //   env.stepTime = 100;
+    //   env.text.speed = 100 - env.stepTime;
+    //   env.setAnimation(animate);
+    // }, 5000);
   };
 
   window.addEventListener(

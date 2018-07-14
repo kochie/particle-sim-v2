@@ -1,4 +1,6 @@
-import { Raycaster, Vector2, Vector3 } from 'three';
+import {
+  Raycaster, Vector2, Vector3,
+} from 'three';
 import { ParticleGroup } from './particle';
 import { RingGroup } from './torus';
 import Field from './fields';
@@ -29,6 +31,12 @@ export default class Environment {
     );
 
     this.electricField = new Field();
+  }
+
+
+  removeParticle(particle) {
+    this.scene.remove(particle.mesh);
+    this.particleGroup.removeParticle(particle);
   }
 
   setAnimation(animation) {
