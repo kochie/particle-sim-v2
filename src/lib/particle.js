@@ -19,6 +19,9 @@ export class ParticleGroup {
     this.meshList = [];
     this.particles = [];
     this.sumForce = [];
+    this.centerOfMass = new Vector3();
+    this.groupVelocity = new Vector3();
+    this.groupAcceleration = new Vector3();
     this.gravity = true;
     this.electro = true;
     this.boundary = {
@@ -29,6 +32,30 @@ export class ParticleGroup {
     };
     this.env = env;
     this.drawBoundary();
+  }
+
+  calcGroupVelocity() {
+    this.groupVelocity = new Vector3();
+    this.particles.forEach((particle) => {
+      this.groupVelocity.add(particle.velocity);
+    });
+  }
+
+  calcGroupAcceleration() {
+    this.groupAcceleration = new Vector3();
+    this.particles.forEach((particle) => {
+      this.groupAcceleration.add(particle.acceleration);
+    });
+  }
+
+  calcCenterOfMass() {
+    let totalMass = 0;
+    this.centerOfMass = new Vector3();
+    this.particles.forEach((particle) => {
+      totalMass += particle.mass;
+      this.centerOfMass.add(particle.position.multiplyScalar(particle.mass));
+    });
+    this.centerOfMass.divideScalar(totalMass);
   }
 
   toggleBoundaryVisibility() {
