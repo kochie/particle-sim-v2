@@ -8,9 +8,13 @@ jobs:
     - stage: Lint
       script: npm run lint
     - stage: Test & Coverage
-      script: npm run coverage
+      script:
+        - npm run test
+        - npm run coverage
     - stage: Build & Deploy
-      script: npm run build && npm run deploy
+      script: 
+        - npm run build
+        - npm run deploy
       if: branch = master
 env:
   global:
