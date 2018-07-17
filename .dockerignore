@@ -1,0 +1,8 @@
+dist/
+.idea/
+node_modules/
+.cache/
+yarn.lock
+yarn-error.log
+.sass-cache/
+coverage/
