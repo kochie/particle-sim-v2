@@ -207,7 +207,7 @@ export default function init(canvasElement) {
     env.gui.add(env.text, 'electro', 0, 10).onChange((value) => { env.particleGroup.electro = value; });
     env.gui.add(env.text, 'boundaryVisibility').onChange(() => env.particleGroup.toggleBoundaryVisibility());
     env.gui.add(env.text, 'boundarySize', 1, 500, 1).onChange(value => env.particleGroup.changeBoundarySize(value));
-    env.gui.add(env.text, 'boundaryType', ['none', 'closed', 'delete']).onChange(value => env.particleGroup.changeBoundaryType(value));
+    env.gui.add(env.text, 'boundaryType', ['none', 'closed', 'delete', 'torus']).onChange(value => env.particleGroup.changeBoundaryType(value));
 
     env.speedController.onChange((value) => {
       env.stepTime = 100 - value;

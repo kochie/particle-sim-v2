@@ -12,7 +12,11 @@ import {
 } from 'three';
 import { newId } from './tools';
 
-const geometry = new SphereGeometry(1, 32, 32);
+const geometry = new SphereGeometry(1, 10, 10);
+
+// Rules for boundary collision.
+// A collision with the boundary is detected if the position of the particle is outside the safe zone
+// If position.x + radius > boundary.x
 
 export class ParticleGroup {
   constructor(env) {
@@ -81,6 +85,26 @@ export class ParticleGroup {
 
   changeBoundarySize(size) {
     this.boundary.size = size;
+    this.particles.forEach(particle => {
+        if (particle.position.x > size) {
+          particle.position.x = (particle.position.x % size) - size;
+        }
+        if (particle.position.x < -size) {
+          particle.position.x = (particle.position.x % size) + size;
+        }
+        if (particle.position.y > size) {
+          particle.position.y = (particle.position.y % size) - size;
+        }
+        if (particle.position.y < -size) {
+          particle.position.y = (particle.position.y % size) + size;
+        }
+        if (particle.position.z > size) {
+          particle.position.z = (particle.position.z % size) - size;
+        }
+        if (particle.position.z < -size) {
+          particle.position.z = (particle.position.z % size) + size;
+        }
+    })
     this.redrawBoundary();
   }
 
@@ -190,16 +214,37 @@ export class ParticleGroup {
   }
 
   updatePositionAll() {
-    for (let x = this.particles.length - 1; x >= 0; x -= 1) {
-      this.particles[x].calcAcceleration();
-      this.particles[x].calcKinematics(0.1);
-      this.particles[x].boundaryBox(
+    this.particles.forEach(particle => particle.calcAcceleration())
+    this.particles.forEach(particle => particle.calcKinematics(0.1))
+    this.particles.forEach(particle => particle.boundaryBox(
         this.boundary.size,
         this.boundary.type,
         this.env,
-      );
+      )
+    )
+    for (let i = 0; i < this.particles.length-1; i++) {
+      for (let j = i + 1; j < this.particles.length; j++) {
+        this.calculateCollision(this.particles[i], this .particles[j])
+      }
     }
+
     this.particles.forEach(particle => particle.setPosition());
+  }
+
+  calculateCollision(particle1, particle2) {
+    const radius2 = 2
+    if (particle1.position.distanceTo(particle2.position) < radius2) {
+      const particleVel = particle1.velocity.clone().sub(particle2.velocity)
+      const particleDist = particle1.position.clone().sub(particle2.position)
+
+      const g1 = particleVel.clone().dot(particleDist).divideScalar(particleDist.lengthSq()).multiplyScalar(2*particle2.mass/(particle1.mass+particle2.mass))
+      const newVelocity1 = new Vector3().subVectors(particle1.velocity, particleVel.clone().multiplyScalar(g1))
+      const g2 = particleVel.clone().neg().dot(particleDist.clone().neg()).divideScalar(particleDist.lenghtSq()).multiplyScalar(2*particle1.mass/(particle1.mass+particle2.mass))
+      const newVelocity2 = new Vector3().addVectors(particle2.velocity, particleVel.clone().neg().multiplyScalar(g2))
+
+      particle1.velocity.copy(newVelocity1)
+      particle2.velocity.copy(newVelocity2)
+    }
   }
 }
 
@@ -320,9 +365,32 @@ export class Particle {
     }
   }
 
-  boundaryBox(size, type = 'closed', env) {
+  boundaryBox(size, type = 'torus', env) {
+    const decay = 0.98
+    const radius = 1
     switch (type) {
       case 'closed': {
+        if (this.position.x + radius > size) {
+          this.velocity.x = -this.velocity.x*decay
+        }
+        if (this.position.x - radius < -size) {
+          this.velocity.x = -this.velocity.x*decay
+        }
+        if (this.position.y + radius > size) {
+          this.velocity.y = -this.velocity.y*decay
+        }
+        if (this.position.y - radius < -size) {
+          this.velocity.y = -this.velocity.y*decay
+        }
+        if (this.position.z + radius > size) {
+          this.velocity.z = -this.velocity.z*decay
+        }
+        if (this.position.z - radius < -size) {
+          this.velocity.z = -this.velocity.z*decay
+        }
+        break;
+      }
+      case 'torus': {
         if (this.position.x > size) {
           this.position.x = (this.position.x % size) - size;
         }
