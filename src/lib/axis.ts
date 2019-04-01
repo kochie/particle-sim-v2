@@ -1,7 +1,3 @@
-/**
- * Created by rkoch on 12/23/16.
- */
-
 import {
   Vector3,
   Object3D,
@@ -9,11 +5,12 @@ import {
   LineDashedMaterial,
   LineBasicMaterial,
   Line,
+  Color,
 } from 'three';
 
-const buildAxis = (src, dst, colorHex, dashed) => {
-  const geom = new Geometry();
-  let mat;
+const buildAxis = (src: Vector3, dst: Vector3, colorHex: Color, dashed: boolean): Line => {
+  const geom: Geometry = new Geometry();
+  let mat: LineBasicMaterial;
 
   if (dashed) {
     mat = new LineDashedMaterial({
@@ -32,55 +29,55 @@ const buildAxis = (src, dst, colorHex, dashed) => {
   return new Line(geom, mat);
 };
 
-export default function buildAxes() {
+export default function buildAxes(): Object3D {
   const axes = new Object3D();
   axes.add(
     buildAxis(
       new Vector3(0, 0, 0),
       new Vector3(1000, 0, 0),
-      0xff0000,
+      new Color(0xff0000),
       false,
     ),
-  ); // +X
+  );
   axes.add(
     buildAxis(
       new Vector3(0, 0, 0),
       new Vector3(-1000, 0, 0),
-      0x800000,
+      new Color(0x800000),
       true,
     ),
-  ); // -X
+  );
   axes.add(
     buildAxis(
       new Vector3(0, 0, 0),
       new Vector3(0, 1000, 0),
-      0x00ff00,
+      new Color(0x00ff00),
       false,
     ),
-  ); // +Y
+  );
   axes.add(
     buildAxis(
       new Vector3(0, 0, 0),
       new Vector3(0, -1000, 0),
-      0x008000,
+      new Color(0x008000),
       true,
     ),
-  ); // -Y
+  );
   axes.add(
     buildAxis(
       new Vector3(0, 0, 0),
       new Vector3(0, 0, 1000),
-      0x0000ff,
+      new Color(0x0000ff),
       false,
     ),
-  ); // +Z
+  );
   axes.add(
     buildAxis(
       new Vector3(0, 0, 0),
       new Vector3(0, 0, -1000),
-      0x000080,
+      new Color(0x000080),
       true,
     ),
-  ); // -Z
+  );
   return axes;
 }

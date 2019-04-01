@@ -1,12 +1,44 @@
 import {
-  Raycaster, Vector2, Vector3,
+  Raycaster, Vector2, Vector3, Scene, Camera, WebGLRenderer,
 } from 'three';
-import { ParticleGroup } from './particle';
+import { ParticleGroup, Particle } from './particle';
 import { RingGroup } from './torus';
 import Field from './fields';
+import TrackballControls from './TrackballControls';
+import { FizzyText } from './init';
+
+interface Options {
+  scene: Scene
+  camera: Camera
+  renderer: WebGLRenderer
+  stats: Stats
+}
 
 export default class Environment {
-  constructor(options) {
+  public raycaster: Raycaster
+  public mouse: Vector2
+  public scene: Scene
+  public camera: Camera
+  public renderer: WebGLRenderer
+  public stats: Stats
+  public stepTime: number
+  public cameraStart: {
+    position: Vector3
+    target: Vector3
+    up: Vector3
+  }
+  public particleGroup: ParticleGroup
+  public ringGroup: RingGroup
+  public magneticField: Field
+  public electricField: Field
+  public intervalId: NodeJS.Timeout
+  public controls: TrackballControls
+  public text: FizzyText
+  public gui: dat.GUI
+  public activeParticle: Particle
+  public speedController: dat.GUIController
+
+  public constructor(options: Options) {
     this.raycaster = new Raycaster();
     this.mouse = new Vector2();
     this.scene = options.scene;
@@ -14,9 +46,13 @@ export default class Environment {
     this.renderer = options.renderer;
     this.stats = options.stats;
     this.stepTime = 100;
-    this.cameraStart = {};
+    this.cameraStart = {
+      position: new Vector3(),
+      target: new Vector3(),
+      up: new Vector3()
+    };
     this.particleGroup = new ParticleGroup(this);
-    this.ringGroup = new RingGroup(this);
+    this.ringGroup = new RingGroup();
 
     this.renderer.setPixelRatio(
       window.devicePixelRatio ? window.devicePixelRatio : 1,
@@ -33,13 +69,12 @@ export default class Environment {
     this.electricField = new Field();
   }
 
-
-  removeParticle(particle) {
+  public removeParticle(particle: Particle): void {
     this.scene.remove(particle.mesh);
     this.particleGroup.removeParticle(particle);
   }
 
-  setAnimation(animation) {
+  public setAnimation(animation: Function): void {
     const that = this;
     if (typeof this.intervalId !== 'undefined') {
       clearInterval(this.intervalId);
@@ -51,27 +86,24 @@ export default class Environment {
     }
   }
 
-  addParticle(particle) {
+  public addParticle(particle: Particle): void {
     this.scene.add(particle.mesh);
     this.particleGroup.addParticle(particle);
   }
 
-  onMouseMove(event) {
-  // calculate mouse position in normalized device coordinates
-  // (-1 to +1) for both components
-
+  public onMouseMove(event: MouseEvent): void {
     this.mouse.x = event.clientX / window.innerWidth * 2 - 1;
     this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
   }
 
-  cameraFocus(particle, env) {
+  public cameraFocus(particle: Particle, env: Environment): void {
     const part = particle.particle;
     this.deselectObject();
     part.mesh.add(env.camera);
     this.activeParticle = part;
   }
 
-  deselectObject() {
+  public deselectObject(): void {
     if (this.activeParticle) {
     // console.log(env.activeParticle);
       this.activeParticle.mesh.remove(this.camera);
@@ -80,12 +112,12 @@ export default class Environment {
     }
   }
 
-  moveCamera() {
+  public moveCamera(): void {
   // console.log('camera move');
     this.controls.target = new Vector3(10, 20, 30);
   }
 
-  onWindowResize() {
+  public onWindowResize(): void {
     this.camera.aspect = window.innerWidth / window.innerHeight;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(window.innerWidth, window.innerHeight);

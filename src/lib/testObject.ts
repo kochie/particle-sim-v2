@@ -1,7 +1,3 @@
-/**
- * Created by rkoch on 12/23/16.
- */
-
 import {
   Object3D,
   TorusBufferGeometry,
@@ -10,11 +6,11 @@ import {
   LineBasicMaterial,
   MeshPhongMaterial,
   Mesh,
-  FlatShading,
+  // FlatShading,
   DoubleSide,
 } from 'three';
 
-export default function createTestObject() {
+export default function createTestObject(): Object3D {
   const mesh = new Object3D();
 
   const geometry = new TorusBufferGeometry(10, 3, 50, 50);
@@ -37,7 +33,7 @@ export default function createTestObject() {
         color: 0x156289,
         emissive: 0x072534,
         side: DoubleSide,
-        shading: FlatShading,
+        // shading: FlatShading,
       }),
     ),
   );

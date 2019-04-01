@@ -1,16 +1,12 @@
-/**
- * Created by rkoch on 12/23/16.
- */
-
 import {
   Vector3,
-  Object3D,
   SphereGeometry,
   Mesh,
   BoxGeometry,
   MeshBasicMaterial,
 } from 'three';
 import { newId } from './tools';
+import Environment from './environment';
 
 const geometry = new SphereGeometry(1, 10, 10);
 
@@ -18,18 +14,46 @@ const geometry = new SphereGeometry(1, 10, 10);
 // A collision with the boundary is detected if the position of the particle is outside the safe zone
 // If position.x + radius > boundary.x
 
+enum BoundaryType {
+  CLOSED = "CLOSED",
+  TORUS = "TORUS",
+  DELETE = "DELETE",
+  NONE = "NONE"
+}
+
+enum KinematicMethod {
+  EULER = "EULER",
+  RK4 = "RK4"
+}
+
 export class ParticleGroup {
-  constructor(env) {
+  public meshList: Mesh[]
+  public particles: Particle[]
+  private sumForce: Vector3[]
+  private centerOfMass: Vector3
+  private groupVelocity: Vector3
+  private groupAcceleration: Vector3
+  public gravity: number
+  public electro: number
+  public boundary: {
+    type: BoundaryType,
+    size: number,
+    mesh: Mesh,
+    visible: boolean
+  }
+  private env: Environment
+
+  public constructor(env: Environment) {
     this.meshList = [];
     this.particles = [];
     this.sumForce = [];
     this.centerOfMass = new Vector3();
     this.groupVelocity = new Vector3();
     this.groupAcceleration = new Vector3();
-    this.gravity = true;
-    this.electro = true;
+    this.gravity = 1;
+    this.electro = 1;
     this.boundary = {
-      type: 'closed',
+      type: BoundaryType.CLOSED,
       size: 50,
       mesh: null,
       visible: true,
@@ -38,21 +62,21 @@ export class ParticleGroup {
     this.drawBoundary();
   }
 
-  calcGroupVelocity() {
+  public calcGroupVelocity(): void {
     this.groupVelocity = new Vector3();
     this.particles.forEach((particle) => {
       this.groupVelocity.add(particle.velocity);
     });
   }
 
-  calcGroupAcceleration() {
+  public calcGroupAcceleration(): void {
     this.groupAcceleration = new Vector3();
     this.particles.forEach((particle) => {
       this.groupAcceleration.add(particle.acceleration);
     });
   }
 
-  calcCenterOfMass() {
+  public calcCenterOfMass(): void {
     let totalMass = 0;
     this.centerOfMass = new Vector3();
     this.particles.forEach((particle) => {
@@ -62,13 +86,13 @@ export class ParticleGroup {
     this.centerOfMass.divideScalar(totalMass);
   }
 
-  toggleBoundaryVisibility() {
+  public toggleBoundaryVisibility(): void {
     this.boundary.visible = !this.boundary.visible;
     this.redrawBoundary();
   }
 
-  drawBoundary() {
-    if (this.boundary.type === 'none' || !this.boundary.visible) {
+  public drawBoundary(): void {
+    if (this.boundary.type === BoundaryType.NONE || !this.boundary.visible) {
       return;
     }
     const size = this.boundary.size * 2;
@@ -78,12 +102,12 @@ export class ParticleGroup {
     this.env.scene.add(this.boundary.mesh);
   }
 
-  changeBoundaryType(type) {
+  public changeBoundaryType(type: BoundaryType): void {
     this.boundary.type = type;
     this.redrawBoundary();
   }
 
-  changeBoundarySize(size) {
+  public changeBoundarySize(size: number): void {
     this.boundary.size = size;
     this.particles.forEach(particle => {
         if (particle.position.x > size) {
@@ -108,34 +132,32 @@ export class ParticleGroup {
     this.redrawBoundary();
   }
 
-  redrawBoundary() {
+  public redrawBoundary(): void {
     this.env.scene.remove(this.boundary.mesh);
     this.drawBoundary();
   }
 
-  index(i, j) {
+  public index(i: number, j: number): number {
     return (i - 1) * this.particles.length + (j - 1) - i * (i + 1) / 2;
   }
 
-  addParticle(particle) {
+  public addParticle(particle: Particle): void {
     this.particles.push(particle);
     this.meshList.push(particle.mesh);
     if (this.particles.length > 1) {
-      this.sumForce.push(0);
+      this.sumForce.push(new Vector3());
     }
-    // console.log(`sumForce Length: ${this.sumForce.length}`);
   }
 
-  removeParticle(particle) {
+  public removeParticle(particle: Particle): void {
     const index = this.particles.indexOf(particle);
     this.particles.splice(index, 1);
     this.meshList.splice(index, 1);
     this.sumForce.pop();
   }
 
-  getForceValue(i, j) {
+  public getForceValue(i: number, j: number): Vector3 {
     if (i < j) {
-      // console.log(((j-3)+(i)));
       return this.sumForce[this.index(i, j)];
     } if (i > j) {
       return this.sumForce[this.index(j, i)].clone().multiplyScalar(-1);
@@ -143,7 +165,7 @@ export class ParticleGroup {
     return new Vector3();
   }
 
-  updateForce(i, j) {
+  public updateForce(i: number, j: number): void {
     /*
         |(1,1) (1,2) (1,3) (1,4) (1,5)|
         |(2,1) (2,2) (2,3) (2,4) (2,5)|
@@ -177,7 +199,7 @@ export class ParticleGroup {
       .multiplyScalar(((q1 * q2 * K) - (m1 * m2 * G)) / r2);
   }
 
-  calculateForceOn(i, env) {
+  public calculateForceOn(i: number, env: Environment): Vector3 {
     const value = new Vector3();
     for (let x = 1; x <= this.particles.length; x += 1) {
       // console.log(i,x);
@@ -191,7 +213,7 @@ export class ParticleGroup {
     return value;
   }
 
-  calculateForceAll(env) {
+  public calculateForceAll(env: Environment): void {
     /*
          |(1,1) (1,2) (1,3)|
          |(2,1) (2,2) (2,3)|
@@ -213,7 +235,7 @@ export class ParticleGroup {
     // console.log(this.sumForce);
   }
 
-  updatePositionAll() {
+  public updatePositionAll(): void {
     this.particles.forEach(particle => particle.calcAcceleration())
     this.particles.forEach(particle => particle.calcKinematics(0.1))
     this.particles.forEach(particle => particle.boundaryBox(
@@ -231,16 +253,16 @@ export class ParticleGroup {
     this.particles.forEach(particle => particle.setPosition());
   }
 
-  calculateCollision(particle1, particle2) {
+  public calculateCollision(particle1: Particle, particle2: Particle): void {
     const radius2 = 2
     if (particle1.position.distanceTo(particle2.position) < radius2) {
       const particleVel = particle1.velocity.clone().sub(particle2.velocity)
       const particleDist = particle1.position.clone().sub(particle2.position)
 
-      const g1 = particleVel.clone().dot(particleDist).divideScalar(particleDist.lengthSq()).multiplyScalar(2*particle2.mass/(particle1.mass+particle2.mass))
+      const g1 = particleVel.clone().dot(particleDist)/(particleDist.lengthSq())*(2*particle2.mass/(particle1.mass+particle2.mass))
       const newVelocity1 = new Vector3().subVectors(particle1.velocity, particleVel.clone().multiplyScalar(g1))
-      const g2 = particleVel.clone().neg().dot(particleDist.clone().neg()).divideScalar(particleDist.lenghtSq()).multiplyScalar(2*particle1.mass/(particle1.mass+particle2.mass))
-      const newVelocity2 = new Vector3().addVectors(particle2.velocity, particleVel.clone().neg().multiplyScalar(g2))
+      const g2 = particleVel.clone().negate().dot(particleDist.clone().negate())/(particleDist.lengthSq())*(2*particle1.mass/(particle1.mass+particle2.mass))
+      const newVelocity2 = new Vector3().addVectors(particle2.velocity, particleVel.clone().negate().multiplyScalar(g2))
 
       particle1.velocity.copy(newVelocity1)
       particle2.velocity.copy(newVelocity2)
@@ -249,7 +271,18 @@ export class ParticleGroup {
 }
 
 export class Particle {
-  constructor(
+  public mass: number
+  public charge: number
+  public defaultColour: number
+  public colour: number
+  public position: Vector3
+  public velocity: Vector3
+  public acceleration: Vector3
+  public force: Vector3
+  public mesh: Mesh
+  public id: number
+
+  public constructor(
     colour = 0xffffff,
     charge = 0,
     position = new Vector3(),
@@ -263,52 +296,30 @@ export class Particle {
     this.velocity = velocity;
     this.acceleration = new Vector3();
     this.force = new Vector3();
-    this.mesh = new Object3D();
+    this.mesh = new Mesh();
     this.buildObject();
     this.id = newId();
-    //    env.scene.add(this.mesh);
-    //    env.particleGroup.addParticle(this);
     this.mesh.material.color.setHex(this.colour);
   }
 
-  setDefaultColour() {
+  public setDefaultColour(): void {
     this.mesh.material.color.set(this.defaultColour);
   }
 
-  updateVelocity(velocity) {
+  public updateVelocity(velocity: Vector3): void {
     this.velocity = velocity;
   }
 
-  buildObject() {
+  public buildObject(): void {
     this.mesh = new Mesh(
       geometry,
       new MeshBasicMaterial({ color: this.colour, wireframe: true }),
     );
     this.mesh.particle = this;
     this.setPosition();
-
-    // this.mesh.add( new THREE.LineSegments(
-    //     new THREE.WireframeGeometry(geometry),
-    //     new THREE.LineBasicMaterial( {
-    //         color: 0xffffff,
-    //         transparent: true,
-    //         opacity: 0.5
-    //     } )
-    // ) );
-    //
-    // this.mesh.add( new THREE.Mesh(
-    //     geometry,
-    //     new THREE.MeshPhongMaterial( {
-    //         color: this.colour,
-    //         emissive: 0x072534,
-    //         side: THREE.DoubleSide,
-    //         shading: THREE.FlatShading
-    //     } )
-    // ) );
   }
 
-  calcForce(env) {
-    // console.log(env.magneticField.getValue(this.position));
+  public calcForce(env: Environment): Vector3 {
     const E = env.electricField.getValue(this.position);
     const B = env.magneticField.getValue(this.position);
     const q = this.charge;
@@ -316,25 +327,23 @@ export class Particle {
     const value = new Vector3()
       .addVectors(E, new Vector3().crossVectors(v, B))
       .multiplyScalar(q);
-    // console.log(value);
     return value;
   }
 
-  calcAcceleration() {
-    // a = F/m
+  public calcAcceleration(): void {
     this.acceleration.copy(this.force.clone().divideScalar(this.mass));
   }
 
-  calcKinematics(dt, method = 'euler') {
+  public calcKinematics(dt: number, method: KinematicMethod = KinematicMethod.EULER): void {
     switch (method) {
-      case 'euler': {
+      case KinematicMethod.EULER: {
         this.velocity.addScaledVector(this.acceleration, dt);
         const a = this.acceleration.clone().multiplyScalar(0.5 * (dt ** 2));
         const s = this.velocity.clone().multiplyScalar(dt);
         this.position.add(a).add(s);
         break;
       }
-      case 'rk4': {
+      case KinematicMethod.RK4: {
         // debugger // eslint-disable-line
         const r = this.position;
         const v = this.velocity;
@@ -365,32 +374,39 @@ export class Particle {
     }
   }
 
-  boundaryBox(size, type = 'torus', env) {
+  public boundaryBox(size: number, type: BoundaryType = BoundaryType.TORUS, env: Environment): void {
     const decay = 0.98
     const radius = 1
     switch (type) {
-      case 'closed': {
+      case BoundaryType.CLOSED: {
         if (this.position.x + radius > size) {
+          debugger;
           this.velocity.x = -this.velocity.x*decay
+          this.position.x -= this.position.x + radius - size
         }
         if (this.position.x - radius < -size) {
           this.velocity.x = -this.velocity.x*decay
+          this.position.x += radius + size
         }
         if (this.position.y + radius > size) {
           this.velocity.y = -this.velocity.y*decay
+          this.position.y += this.position.y + radius - size
         }
         if (this.position.y - radius < -size) {
           this.velocity.y = -this.velocity.y*decay
+          this.position.y += this.position.y - radius + size
         }
         if (this.position.z + radius > size) {
           this.velocity.z = -this.velocity.z*decay
+          this.position.z += this.position.z + radius - size
         }
         if (this.position.z - radius < -size) {
           this.velocity.z = -this.velocity.z*decay
+          this.position.z += this.position.z - radius + size
         }
         break;
       }
-      case 'torus': {
+      case BoundaryType.TORUS: {
         if (this.position.x > size) {
           this.position.x = (this.position.x % size) - size;
         }
@@ -411,7 +427,7 @@ export class Particle {
         }
         break;
       }
-      case 'delete': {
+      case BoundaryType.DELETE: {
         if (
           this.position.x > size
           || this.position.y > size
@@ -430,35 +446,29 @@ export class Particle {
     }
   }
 
-  setPosition() {
-    // console.log(`force: ${this.force.toArray()}`);
-    // console.log(`acceleration: ${this.acceleration.toArray()}`);
-    // console.log(`velocity: ${this.velocity.toArray()}`);
-    // console.log(`position: ${this.position.toArray()}`);
-    // console.log('');
-
+  public setPosition(): void {
     this.mesh.position.set(
       this.position.x,
       this.position.y,
       this.position.z,
-    );
+    )
   }
 }
 
 export class Neutron extends Particle {
-  constructor(position, velocity) {
+  public constructor(position: Vector3, velocity: Vector3) {
     super(0xffa500, 0, position, velocity);
   }
 }
 
 export class Proton extends Particle {
-  constructor(position, velocity) {
+  public constructor(position: Vector3, velocity: Vector3 = new Vector3()) {
     super(0x0000ff, 1, position, velocity);
   }
 }
 
 export class Electron extends Particle {
-  constructor(position, velocity) {
+  public constructor(position: Vector3, velocity: Vector3 = new Vector3()) {
     super(0x00ff00, -1, position, velocity);
   }
 }

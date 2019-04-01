@@ -1,6 +1,6 @@
-export function idCounter() {
+export function idCounter(): () => number {
   let id = 0;
-  return function newId() {
+  return function newId(): number {
     id += 1;
     return id;
   };
