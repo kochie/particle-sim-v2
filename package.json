@@ -8,7 +8,7 @@
     "test": "jest --coverage",
     "lint": "eslint ./src --fix",
     "dev": "parcel ./src/index.html",
-    "build": "rm -rf ./public && parcel build ./src/index.html",
+    "now-build": "parcel build ./src/index.html",
     "deploy": "now --token $NOW_TOKEN --target production",
     "validate": "npm ls",
     "coverage": "jest --coverage --coverageReporters=text-lcov | coveralls"
