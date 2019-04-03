@@ -9,7 +9,7 @@
     "lint": "eslint ./src --fix",
     "dev": "parcel ./src/index.html",
     "build": "rm -rf ./public && parcel build ./src/index.html",
-    "deploy": "now --token $NOW_TOKEN && now alias --token $NOW_TOKEN",
+    "deploy": "now --token $NOW_TOKEN --target production",
     "validate": "npm ls",
     "coverage": "jest --coverage --coverageReporters=text-lcov | coveralls"
   },
@@ -57,7 +57,7 @@
     "eslint-plugin-react": "^7.12.4",
     "jest": "^24.7.0",
     "node-sass": "^4.11.0",
-    "now": "^11.2.9",
+    "now": "^15.0.1",
     "parcel-bundler": "^1.12.3",
     "postcss-modules": "^1.1.0",
     "prettier": "^1.16.4",
