@@ -1,8 +1,8 @@
 import { WebGLRenderer, PerspectiveCamera, Scene, Vector3 } from "three";
-
-import * as Stats from "stats.js";
+import Stats from "stats.js";
 import * as dat from "dat.gui";
-import { Proton, Electron, Neutron } from "./particle";
+
+import { Proton, Electron, Neutron, BoundaryType, CollisionType } from "./particle";
 import { positionCamera, resetCamera, objectClick } from "./camera";
 import placeParticle, { ParticleType } from "./gui";
 import Environment from "./environment";
@@ -38,9 +38,10 @@ export class FizzyText {
 	public gravity: number;
 	public electro: number;
 	public boundaryVisibility: boolean;
-	public boundaryType: string;
+	public boundaryType: BoundaryType;
 	public boundarySize: number;
 	public env: Environment;
+	public collisionType: CollisionType
 
 	public constructor(env: Environment) {
 		this.env = env;
@@ -49,8 +50,9 @@ export class FizzyText {
 		this.gravity = 1;
 		this.electro = 1;
 		this.boundaryVisibility = true;
-		this.boundaryType = "closed";
+		this.boundaryType = BoundaryType.CLOSED;
 		this.boundarySize = 50;
+		this.collisionType = CollisionType.ABSORB
 	}
 
 	public resetCamera = () => {
@@ -62,7 +64,7 @@ export class FizzyText {
 	};
 
 	public placeParticle = () => {
-		placeParticle(this.env, { type: ParticleType.RANDOM, speedy: true });
+		placeParticle(this.env, { type: ParticleType.RANDOM, speedy: false });
 	};
 
 	public placeSpeedyParticle = () => {
@@ -170,16 +172,22 @@ export default function init(canvasElement: HTMLDivElement): Environment {
 			.onChange(() => env.particleGroup.toggleBoundaryVisibility());
 		env.gui
 			.add(env.text, "boundarySize", 1, 500, 1)
-			.onChange(value => env.particleGroup.changeBoundarySize(value));
+			.onChange((value: number) => env.particleGroup.changeBoundarySize(value));
 		env.gui
 			.add(env.text, "boundaryType", [
-				"none",
-				"closed",
-				"delete",
-				"torus"
+				BoundaryType.NONE,
+				BoundaryType.CLOSED,
+				BoundaryType.DELETE,
+				BoundaryType.TORUS
 			])
-			.onChange(value => env.particleGroup.changeBoundaryType(value));
-
+			.onChange((value: BoundaryType) => env.particleGroup.changeBoundaryType(value));
+		env.gui
+			.add(env.text, "collisionType", [
+				CollisionType.ABSORB,
+				CollisionType.BOUNCE,
+				CollisionType.NONE
+			])
+			.onChange((value: CollisionType) => env.particleGroup.changeCollisionType(value))
 		env.speedController.onChange((value: number) => {
 			env.stepTime = 100 - value;
 			env.setAnimation(animate);

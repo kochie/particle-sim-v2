@@ -1,5 +1,5 @@
 import {
-  Raycaster, Vector2, Vector3, Scene, Camera, WebGLRenderer,
+  Raycaster, Vector2, Vector3, Scene, Camera, WebGLRenderer, PerspectiveCamera,
 } from 'three';
 import { ParticleGroup, Particle } from './particle';
 import { RingGroup } from './torus';
@@ -9,7 +9,7 @@ import { FizzyText } from './init';
 
 interface Options {
   scene: Scene
-  camera: Camera
+  camera: PerspectiveCamera
   renderer: WebGLRenderer
   stats: Stats
 }
@@ -18,7 +18,7 @@ export default class Environment {
   public raycaster: Raycaster
   public mouse: Vector2
   public scene: Scene
-  public camera: Camera
+  public camera: PerspectiveCamera
   public renderer: WebGLRenderer
   public stats: Stats
   public stepTime: number
@@ -60,12 +60,7 @@ export default class Environment {
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.setClearColor(0x000000, 1);
 
-    this.magneticField = new Field(
-      // (x, y, z) => Math.sin(x) * y + z,
-      // (x, y) => Math.sin(x) * y,
-      // () => 0,
-    );
-
+    this.magneticField = new Field();
     this.electricField = new Field();
   }
 
@@ -96,16 +91,14 @@ export default class Environment {
     this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
   }
 
-  public cameraFocus(particle: Particle, env: Environment): void {
-    const part = particle.particle;
+  public cameraFocus(particle: Particle): void {
     this.deselectObject();
-    part.mesh.add(env.camera);
-    this.activeParticle = part;
+    particle.mesh.add(this.camera);
+    this.activeParticle = particle;
   }
 
   public deselectObject(): void {
     if (this.activeParticle) {
-    // console.log(env.activeParticle);
       this.activeParticle.mesh.remove(this.camera);
       this.activeParticle.setDefaultColour();
       this.activeParticle = undefined;
@@ -113,7 +106,6 @@ export default class Environment {
   }
 
   public moveCamera(): void {
-  // console.log('camera move');
     this.controls.target = new Vector3(10, 20, 30);
   }
 

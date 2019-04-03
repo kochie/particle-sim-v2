@@ -45,6 +45,111 @@ let touchZoomDistanceEnd = 0;
 let state = STATE.NONE;
 let prevState = STATE.NONE;
 
+
+function panCamera(): () => void {
+  const mouseChange = new Vector2();
+  const objectUp = new Vector3();
+  const pan = new Vector3();
+
+  return () => {
+    mouseChange.copy(panEnd).sub(panStart);
+
+    if (mouseChange.lengthSq()) {
+      mouseChange.multiplyScalar(eye.length() * this.panSpeed);
+
+      pan.copy(eye).cross(this.object.up).setLength(mouseChange.x);
+      pan.add(objectUp.copy(this.object.up).setLength(mouseChange.y));
+
+      this.object.position.add(pan);
+      this.target.add(pan);
+
+      if (this.staticMoving) {
+        panStart.copy(panEnd);
+      } else {
+        panStart.add(
+          mouseChange.subVectors(panEnd, panStart).multiplyScalar(this.dynamicDampingFactor),
+        );
+      }
+    }
+  };
+}
+
+function getMouseOnCircle(): (pageX: number, pageY: number) => Vector2 {
+    const vector = new Vector2();
+
+    return (pageX: number, pageY: number): Vector2 => {
+      vector.set(
+        ((pageX - this.screen.width * 0.5 - this.screen.left) / (this.screen.width * 0.5)),
+        ((this.screen.height + 2
+            * (this.screen.top - pageY)) / this.screen.width), // screen.width intentional
+      );
+
+      return vector;
+    };
+  }
+
+
+function getMouseOnScreen(): (pageX: number, pageY: number) => Vector2 {
+  const vector = new Vector2();
+
+  return (pageX: number, pageY: number): Vector2 => {
+    vector.set(
+      (pageX - this.screen.left) / this.screen.width,
+      (pageY - this.screen.top) / this.screen.height,
+    );
+
+    return vector;
+  };
+}
+
+
+function rotateCameraBuild(): () => void {
+  const axis = new Vector3();
+  const quaternion = new Quaternion();
+  const eyeDirection = new Vector3();
+  const objectUpDirection = new Vector3();
+  const objectSidewaysDirection = new Vector3();
+  const moveDirection = new Vector3();
+  let angle: number;
+
+  return () => {
+    moveDirection.set(moveCurr.x - movePrev.x, moveCurr.y - movePrev.y, 0);
+    angle = moveDirection.length();
+
+    if (angle) {
+      eye.copy(this.object.position).sub(this.target);
+
+      eyeDirection.copy(eye).normalize();
+      objectUpDirection.copy(this.object.up).normalize();
+      objectSidewaysDirection.crossVectors(objectUpDirection, eyeDirection).normalize();
+
+      objectUpDirection.setLength(moveCurr.y - movePrev.y);
+      objectSidewaysDirection.setLength(moveCurr.x - movePrev.x);
+
+      moveDirection.copy(objectUpDirection.add(objectSidewaysDirection));
+
+      axis.crossVectors(moveDirection, eye).normalize();
+
+      angle *= this.rotateSpeed;
+      quaternion.setFromAxisAngle(axis, angle);
+
+      eye.applyQuaternion(quaternion);
+      this.object.up.applyQuaternion(quaternion);
+
+      lastAxis.copy(axis);
+      lastAngle = angle;
+    } else if (!this.staticMoving && lastAngle) {
+      lastAngle *= Math.sqrt(1.0 - this.dynamicDampingFactor);
+      eye.copy(this.object.position).sub(this.target);
+      quaternion.setFromAxisAngle(lastAxis, lastAngle);
+      eye.applyQuaternion(quaternion);
+      this.object.up.applyQuaternion(quaternion);
+    }
+
+    movePrev.copy(moveCurr);
+  };
+}
+
 export default class TrackballControls extends EventDispatcher {
   public object: Camera
   public domElement: HTMLCanvasElement
@@ -65,12 +170,16 @@ export default class TrackballControls extends EventDispatcher {
   public dynamicDampingFactor: number
   public minDistance: number
   public maxDistance: number
-  public keys: number[]
+  public keys: [number, number, number]
   public target: Vector3
   public target0: Vector3
   public position0: Vector3
   public up0: Vector3
 
+  private rotateCamera: () => void
+  private panCamera: () => void
+  private getMouseOnCircle: (pageX: number, pageY: number) => Vector2
+  private getMouseOnScreen: (pageX: number, pageY: number) => Vector2
 
   public constructor(object: Camera, domElement: HTMLCanvasElement) {
     super();
@@ -107,10 +216,10 @@ export default class TrackballControls extends EventDispatcher {
     this.position0 = this.object.position.clone();
     this.up0 = this.object.up.clone();
 
-    this.getMouseOnScreen = this.getMouseOnScreen().bind(this);
-    this.getMouseOnCircle = this.getMouseOnCircle().bind(this);
-    this.rotateCamera = this.rotateCamera();
-    this.panCamera = this.panCamera();
+    this.getMouseOnScreen = getMouseOnScreen.bind(this)()
+    this.getMouseOnCircle = getMouseOnCircle.bind(this)()
+    this.rotateCamera = rotateCameraBuild.bind(this)()
+    this.panCamera = panCamera.bind(this)()
 
     this.contextmenu = this.contextmenu.bind(this);
     this.mousedown = this.mousedown.bind(this);
@@ -156,80 +265,6 @@ export default class TrackballControls extends EventDispatcher {
     }
   }
 
-  public getMouseOnScreen(): Function {
-    const vector = new Vector2();
-
-    return (pageX: number, pageY: number): Vector2 => {
-      vector.set(
-        (pageX - this.screen.left) / this.screen.width,
-        (pageY - this.screen.top) / this.screen.height,
-      );
-
-      return vector;
-    };
-  }
-
-  public getMouseOnCircle(): (pageX: number, pageY: number) => Vector2 {
-    const vector = new Vector2();
-
-    return (pageX: number, pageY: number): Vector2 => {
-      vector.set(
-        ((pageX - this.screen.width * 0.5 - this.screen.left) / (this.screen.width * 0.5)),
-        ((this.screen.height + 2
-            * (this.screen.top - pageY)) / this.screen.width), // screen.width intentional
-      );
-
-      return vector;
-    };
-  }
-
-  public rotateCamera(): () => void {
-    const axis = new Vector3();
-    const quaternion = new Quaternion();
-    const eyeDirection = new Vector3();
-    const objectUpDirection = new Vector3();
-    const objectSidewaysDirection = new Vector3();
-    const moveDirection = new Vector3();
-    let angle: number;
-
-    return () => {
-      moveDirection.set(moveCurr.x - movePrev.x, moveCurr.y - movePrev.y, 0);
-      angle = moveDirection.length();
-
-      if (angle) {
-        eye.copy(this.object.position).sub(this.target);
-
-        eyeDirection.copy(eye).normalize();
-        objectUpDirection.copy(this.object.up).normalize();
-        objectSidewaysDirection.crossVectors(objectUpDirection, eyeDirection).normalize();
-
-        objectUpDirection.setLength(moveCurr.y - movePrev.y);
-        objectSidewaysDirection.setLength(moveCurr.x - movePrev.x);
-
-        moveDirection.copy(objectUpDirection.add(objectSidewaysDirection));
-
-        axis.crossVectors(moveDirection, eye).normalize();
-
-        angle *= this.rotateSpeed;
-        quaternion.setFromAxisAngle(axis, angle);
-
-        eye.applyQuaternion(quaternion);
-        this.object.up.applyQuaternion(quaternion);
-
-        lastAxis.copy(axis);
-        lastAngle = angle;
-      } else if (!this.staticMoving && lastAngle) {
-        lastAngle *= Math.sqrt(1.0 - this.dynamicDampingFactor);
-        eye.copy(this.object.position).sub(this.target);
-        quaternion.setFromAxisAngle(lastAxis, lastAngle);
-        eye.applyQuaternion(quaternion);
-        this.object.up.applyQuaternion(quaternion);
-      }
-
-      movePrev.copy(moveCurr);
-    };
-  }
-
   public zoomCamera(): void {
     let factor: number;
 
@@ -250,34 +285,6 @@ export default class TrackballControls extends EventDispatcher {
         zoomStart.y += (zoomEnd.y - zoomStart.y) * this.dynamicDampingFactor;
       }
     }
-  }
-
-  public panCamera(): () => void {
-    const mouseChange = new Vector2();
-    const objectUp = new Vector3();
-    const pan = new Vector3();
-
-    return () => {
-      mouseChange.copy(panEnd).sub(panStart);
-
-      if (mouseChange.lengthSq()) {
-        mouseChange.multiplyScalar(eye.length() * this.panSpeed);
-
-        pan.copy(eye).cross(this.object.up).setLength(mouseChange.x);
-        pan.add(objectUp.copy(this.object.up).setLength(mouseChange.y));
-
-        this.object.position.add(pan);
-        this.target.add(pan);
-
-        if (this.staticMoving) {
-          panStart.copy(panEnd);
-        } else {
-          panStart.add(
-            mouseChange.subVectors(panEnd, panStart).multiplyScalar(this.dynamicDampingFactor),
-          );
-        }
-      }
-    };
   }
 
   public checkDistances(): void {
