@@ -4,7 +4,7 @@ import init from '../lib/init';
 import Environment from '../lib/environment';
 
 export default class Canvas extends React.Component {
-  public canvasElement: HTMLDivElement
+  public canvasElement: HTMLCanvasElement
 
   public componentDidMount(): void {
     this.renderCanvas(init(this.canvasElement));
@@ -23,7 +23,7 @@ export default class Canvas extends React.Component {
 
   public render(): React.ReactElement {
     return (
-      <div ref={(element) => { this.canvasElement = element }} />
+      <canvas ref={(element) => { this.canvasElement = element }} />
     );
   }
 }
