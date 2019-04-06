@@ -1,1 +1,1 @@
-# Particle Sim v2 [![Build Status](https://travis-ci.com/kochie/particle-sim-v2.svg?branch=master)](https://travis-ci.com/kochie/particle-sim-v2) 
+# Particle Sim v2 [![Build Status](https://travis-ci.com/kochie/particle-sim-v2.svg?branch=master)](https://travis-ci.com/kochie/particle-sim-v2) [![Coverage Status](https://coveralls.io/repos/github/kochie/particle-sim-v2/badge.svg?branch=master)](https://coveralls.io/github/kochie/particle-sim-v2?branch=master)
