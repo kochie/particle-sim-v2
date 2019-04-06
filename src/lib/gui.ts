@@ -1,34 +1,43 @@
-/**
- * Created by rkoch on 1/1/17.
- */
-
 import { Vector3 } from 'three';
 import { Proton, Electron, Neutron } from './particle';
 import { randInteger } from './layout';
+import Environment from './environment';
 
-export default function placeParticle(env, { type = 'random', speedy = false } = {}) {
+export enum ParticleType {
+  PROTON = "PROTON",
+  NEUTRON = "NEUTRON",
+  ELECTRON = "ELECTRON",
+  RANDOM = "RANDOM"
+}
+
+interface Options {
+  type: ParticleType,
+  speedy: boolean
+}
+
+export default function placeParticle(env: Environment, options: Options): void {
   const { size } = env.particleGroup.boundary;
-  const x = new Vector3(randInteger(size), randInteger(size), randInteger(size));
-  // console.log(randInteger(1));
+  const radius = 1;
+  const x = new Vector3(randInteger(size-radius), randInteger(size-radius), randInteger(size-radius));
   let s = new Vector3();
-  if (speedy) {
+  if (options.speedy) {
     s = new Vector3(randInteger(6), randInteger(6), randInteger(6));
   }
 
-  switch (type) {
-    case 'neutron': {
+  switch (options.type) {
+    case ParticleType.NEUTRON: {
       env.addParticle(new Neutron(x, s));
       break;
     }
-    case 'proton': {
+    case ParticleType.PROTON: {
       env.addParticle(new Proton(x, s));
       break;
     }
-    case 'electron': {
+    case ParticleType.ELECTRON: {
       env.addParticle(new Electron(x, s));
       break;
     }
-    case 'random': {
+    case ParticleType.RANDOM: {
       const chance = Math.random();
       if (chance > 0.66) {
         env.addParticle(new Neutron(x, s));

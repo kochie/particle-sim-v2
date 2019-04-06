@@ -6,11 +6,16 @@
  */
 
 import {
-  Quaternion, Vector3, Vector2, EventDispatcher,
+  Quaternion, Vector3, Vector2, EventDispatcher, Camera,
 } from 'three';
 
-const STATE = {
-  NONE: -1, ROTATE: 0, ZOOM: 1, PAN: 2, TOUCH_ROTATE: 3, TOUCH_ZOOM_PAN: 4,
+enum STATE {
+  NONE = -1, 
+  ROTATE = 0, 
+  ZOOM = 1, 
+  PAN = 2, 
+  TOUCH_ROTATE = 3,
+  TOUCH_ZOOM_PAN = 4,
 };
 
 const EPS = 0.000001;
@@ -40,11 +45,146 @@ let touchZoomDistanceEnd = 0;
 let state = STATE.NONE;
 let prevState = STATE.NONE;
 
+
+function panCamera(): () => void {
+  const mouseChange = new Vector2();
+  const objectUp = new Vector3();
+  const pan = new Vector3();
+
+  return () => {
+    mouseChange.copy(panEnd).sub(panStart);
+
+    if (mouseChange.lengthSq()) {
+      mouseChange.multiplyScalar(eye.length() * this.panSpeed);
+
+      pan.copy(eye).cross(this.object.up).setLength(mouseChange.x);
+      pan.add(objectUp.copy(this.object.up).setLength(mouseChange.y));
+
+      this.object.position.add(pan);
+      this.target.add(pan);
+
+      if (this.staticMoving) {
+        panStart.copy(panEnd);
+      } else {
+        panStart.add(
+          mouseChange.subVectors(panEnd, panStart).multiplyScalar(this.dynamicDampingFactor),
+        );
+      }
+    }
+  };
+}
+
+function getMouseOnCircle(): (pageX: number, pageY: number) => Vector2 {
+    const vector = new Vector2();
+
+    return (pageX: number, pageY: number): Vector2 => {
+      vector.set(
+        ((pageX - this.screen.width * 0.5 - this.screen.left) / (this.screen.width * 0.5)),
+        ((this.screen.height + 2
+            * (this.screen.top - pageY)) / this.screen.width), // screen.width intentional
+      );
+
+      return vector;
+    };
+  }
+
+
+function getMouseOnScreen(): (pageX: number, pageY: number) => Vector2 {
+  const vector = new Vector2();
+
+  return (pageX: number, pageY: number): Vector2 => {
+    vector.set(
+      (pageX - this.screen.left) / this.screen.width,
+      (pageY - this.screen.top) / this.screen.height,
+    );
+
+    return vector;
+  };
+}
+
+
+function rotateCameraBuild(): () => void {
+  const axis = new Vector3();
+  const quaternion = new Quaternion();
+  const eyeDirection = new Vector3();
+  const objectUpDirection = new Vector3();
+  const objectSidewaysDirection = new Vector3();
+  const moveDirection = new Vector3();
+  let angle: number;
+
+  return () => {
+    moveDirection.set(moveCurr.x - movePrev.x, moveCurr.y - movePrev.y, 0);
+    angle = moveDirection.length();
+
+    if (angle) {
+      eye.copy(this.object.position).sub(this.target);
+
+      eyeDirection.copy(eye).normalize();
+      objectUpDirection.copy(this.object.up).normalize();
+      objectSidewaysDirection.crossVectors(objectUpDirection, eyeDirection).normalize();
+
+      objectUpDirection.setLength(moveCurr.y - movePrev.y);
+      objectSidewaysDirection.setLength(moveCurr.x - movePrev.x);
+
+      moveDirection.copy(objectUpDirection.add(objectSidewaysDirection));
+
+      axis.crossVectors(moveDirection, eye).normalize();
+
+      angle *= this.rotateSpeed;
+      quaternion.setFromAxisAngle(axis, angle);
+
+      eye.applyQuaternion(quaternion);
+      this.object.up.applyQuaternion(quaternion);
+
+      lastAxis.copy(axis);
+      lastAngle = angle;
+    } else if (!this.staticMoving && lastAngle) {
+      lastAngle *= Math.sqrt(1.0 - this.dynamicDampingFactor);
+      eye.copy(this.object.position).sub(this.target);
+      quaternion.setFromAxisAngle(lastAxis, lastAngle);
+      eye.applyQuaternion(quaternion);
+      this.object.up.applyQuaternion(quaternion);
+    }
+
+    movePrev.copy(moveCurr);
+  };
+}
+
 export default class TrackballControls extends EventDispatcher {
-  constructor(object, domElement) {
+  public object: Camera
+  public domElement: HTMLCanvasElement
+  public enabled: boolean
+  public screen: {
+    left: number
+    top: number
+    width: number
+    height: number
+  }
+  public rotateSpeed: number
+  public zoomSpeed: number
+  public panSpeed: number
+  public noRotate: boolean
+  public noZoom: boolean
+  public noPan: boolean
+  public staticMoving: boolean
+  public dynamicDampingFactor: number
+  public minDistance: number
+  public maxDistance: number
+  public keys: [number, number, number]
+  public target: Vector3
+  public target0: Vector3
+  public position0: Vector3
+  public up0: Vector3
+
+  private rotateCamera: () => void
+  private panCamera: () => void
+  private getMouseOnCircle: (pageX: number, pageY: number) => Vector2
+  private getMouseOnScreen: (pageX: number, pageY: number) => Vector2
+
+  public constructor(object: Camera, domElement: HTMLCanvasElement) {
     super();
     this.object = object;
-    this.domElement = (domElement !== undefined) ? domElement : document;
+    this.domElement = domElement;
     this.enabled = true;
 
     this.screen = {
@@ -76,10 +216,10 @@ export default class TrackballControls extends EventDispatcher {
     this.position0 = this.object.position.clone();
     this.up0 = this.object.up.clone();
 
-    this.getMouseOnScreen = this.getMouseOnScreen().bind(this);
-    this.getMouseOnCircle = this.getMouseOnCircle().bind(this);
-    this.rotateCamera = this.rotateCamera();
-    this.panCamera = this.panCamera();
+    this.getMouseOnScreen = getMouseOnScreen.bind(this)()
+    this.getMouseOnCircle = getMouseOnCircle.bind(this)()
+    this.rotateCamera = rotateCameraBuild.bind(this)()
+    this.panCamera = panCamera.bind(this)()
 
     this.contextmenu = this.contextmenu.bind(this);
     this.mousedown = this.mousedown.bind(this);
@@ -109,105 +249,24 @@ export default class TrackballControls extends EventDispatcher {
     this.update();
   }
 
-  handleResize() {
-    if (this.domElement === document) {
-      this.screen.left = 0;
-      this.screen.top = 0;
-      this.screen.width = window.innerWidth;
-      this.screen.height = window.innerHeight;
-    } else {
-      const box = this.domElement.getBoundingClientRect();
-      // adjustments come from similar code in the jquery offset() function
-      const d = this.domElement.ownerDocument.documentElement;
-      this.screen.left = box.left + window.pageXOffset - d.clientLeft;
-      this.screen.top = box.top + window.pageYOffset - d.clientTop;
-      this.screen.width = box.width;
-      this.screen.height = box.height;
-    }
+  public handleResize(): void {
+    const box = this.domElement.getBoundingClientRect();
+    // adjustments come from similar code in the jquery offset() function
+    const d = this.domElement.ownerDocument.documentElement;
+    this.screen.left = box.left + window.pageXOffset - d.clientLeft;
+    this.screen.top = box.top + window.pageYOffset - d.clientTop;
+    this.screen.width = box.width;
+    this.screen.height = box.height;
   }
 
-  handleEvent(event) {
+  public handleEvent(event: Event): void {
     if (typeof this[event.type] === 'function') {
       this[event.type](event);
     }
   }
 
-  getMouseOnScreen() {
-    const vector = new Vector2();
-
-    return (pageX, pageY) => {
-      vector.set(
-        (pageX - this.screen.left) / this.screen.width,
-        (pageY - this.screen.top) / this.screen.height,
-      );
-
-      return vector;
-    };
-  }
-
-  getMouseOnCircle() {
-    const vector = new Vector2();
-
-    return (pageX, pageY) => {
-      vector.set(
-        ((pageX - this.screen.width * 0.5 - this.screen.left) / (this.screen.width * 0.5)),
-        ((this.screen.height + 2
-            * (this.screen.top - pageY)) / this.screen.width), // screen.width intentional
-      );
-
-      return vector;
-    };
-  }
-
-  rotateCamera() {
-    const axis = new Vector3();
-    const quaternion = new Quaternion();
-    const eyeDirection = new Vector3();
-    const objectUpDirection = new Vector3();
-    const objectSidewaysDirection = new Vector3();
-    const moveDirection = new Vector3();
-    let angle;
-
-    return () => {
-      moveDirection.set(moveCurr.x - movePrev.x, moveCurr.y - movePrev.y, 0);
-      angle = moveDirection.length();
-
-      if (angle) {
-        eye.copy(this.object.position).sub(this.target);
-
-        eyeDirection.copy(eye).normalize();
-        objectUpDirection.copy(this.object.up).normalize();
-        objectSidewaysDirection.crossVectors(objectUpDirection, eyeDirection).normalize();
-
-        objectUpDirection.setLength(moveCurr.y - movePrev.y);
-        objectSidewaysDirection.setLength(moveCurr.x - movePrev.x);
-
-        moveDirection.copy(objectUpDirection.add(objectSidewaysDirection));
-
-        axis.crossVectors(moveDirection, eye).normalize();
-
-        angle *= this.rotateSpeed;
-        quaternion.setFromAxisAngle(axis, angle);
-
-        eye.applyQuaternion(quaternion);
-        this.object.up.applyQuaternion(quaternion);
-
-        lastAxis.copy(axis);
-        lastAngle = angle;
-      } else if (!this.staticMoving && lastAngle) {
-        lastAngle *= Math.sqrt(1.0 - this.dynamicDampingFactor);
-        eye.copy(this.object.position).sub(this.target);
-        quaternion.setFromAxisAngle(lastAxis, lastAngle);
-        eye.applyQuaternion(quaternion);
-        this.object.up.applyQuaternion(quaternion);
-      }
-
-      movePrev.copy(moveCurr);
-    };
-  }
-
-  zoomCamera() {
-    let factor;
+  public zoomCamera(): void {
+    let factor: number;
 
     if (state === STATE.TOUCH_ZOOM_PAN) {
       factor = touchZoomDistanceStart / touchZoomDistanceEnd;
@@ -228,35 +287,7 @@ export default class TrackballControls extends EventDispatcher {
     }
   }
 
-  panCamera() {
-    const mouseChange = new Vector2();
-    const objectUp = new Vector3();
-    const pan = new Vector3();
-
-    return () => {
-      mouseChange.copy(panEnd).sub(panStart);
-
-      if (mouseChange.lengthSq()) {
-        mouseChange.multiplyScalar(eye.length() * this.panSpeed);
-
-        pan.copy(eye).cross(this.object.up).setLength(mouseChange.x);
-        pan.add(objectUp.copy(this.object.up).setLength(mouseChange.y));
-
-        this.object.position.add(pan);
-        this.target.add(pan);
-
-        if (this.staticMoving) {
-          panStart.copy(panEnd);
-        } else {
-          panStart.add(
-            mouseChange.subVectors(panEnd, panStart).multiplyScalar(this.dynamicDampingFactor),
-          );
-        }
-      }
-    };
-  }
-
-  checkDistances() {
+  public checkDistances(): void {
     if (!this.noZoom || !this.noPan) {
       if (eye.lengthSq() > this.maxDistance * this.maxDistance) {
         this.object.position.addVectors(this.target, eye.setLength(this.maxDistance));
@@ -270,7 +301,7 @@ export default class TrackballControls extends EventDispatcher {
     }
   }
 
-  update() {
+  public update(): void {
     eye.subVectors(this.object.position, this.target);
 
     if (!this.noRotate) {
@@ -298,7 +329,7 @@ export default class TrackballControls extends EventDispatcher {
     }
   }
 
-  reset() {
+  public reset(): void {
     state = STATE.NONE;
     prevState = STATE.NONE;
 
@@ -315,7 +346,7 @@ export default class TrackballControls extends EventDispatcher {
     lastPosition.copy(this.object.position);
   }
 
-  keydown(event) {
+  public keydown(event: KeyboardEvent): void {
     if (this.enabled === false) return;
 
     window.removeEventListener('keydown', this.keydown);
@@ -333,7 +364,7 @@ export default class TrackballControls extends EventDispatcher {
     }
   }
 
-  keyup() {
+  public keyup(): void {
     if (this.enabled === false) return;
 
     state = prevState;
@@ -341,7 +372,7 @@ export default class TrackballControls extends EventDispatcher {
     window.addEventListener('keydown', this.keydown, false);
   }
 
-  mousemove(event) {
+  public mousemove(event: MouseEvent): void {
     if (this.enabled === false) return;
 
     event.preventDefault();
@@ -357,7 +388,7 @@ export default class TrackballControls extends EventDispatcher {
     }
   }
 
-  mouseup(event) {
+  public mouseup(event: MouseEvent): void {
     if (this.enabled === false) return;
 
     event.preventDefault();
@@ -370,7 +401,7 @@ export default class TrackballControls extends EventDispatcher {
     this.dispatchEvent(endEvent);
   }
 
-  mousedown(event) {
+  public mousedown(event: MouseEvent): void {
     if (this.enabled === false) return;
 
     event.preventDefault();
@@ -397,7 +428,7 @@ export default class TrackballControls extends EventDispatcher {
     this.dispatchEvent(startEvent);
   }
 
-  mousewheel(event) {
+  public mousewheel(event: MouseWheelEvent): void {
     if (this.enabled === false) return;
 
     if (this.noZoom === true) return;
@@ -426,7 +457,7 @@ export default class TrackballControls extends EventDispatcher {
     this.dispatchEvent(endEvent);
   }
 
-  touchstart(event) {
+  public touchstart(event: TouchEvent): void {
     if (this.enabled === false) return;
 
     switch (event.touches.length) {
@@ -455,7 +486,7 @@ export default class TrackballControls extends EventDispatcher {
     this.dispatchEvent(startEvent);
   }
 
-  touchmove(event) {
+  public touchmove(event: TouchEvent): void {
     if (this.enabled === false) return;
 
     event.preventDefault();
@@ -481,7 +512,7 @@ export default class TrackballControls extends EventDispatcher {
     }
   }
 
-  touchend(event) {
+  public touchend(event: TouchEvent): void {
     if (this.enabled === false) return;
 
     switch (event.touches.length) {
@@ -503,13 +534,13 @@ export default class TrackballControls extends EventDispatcher {
     this.dispatchEvent(endEvent);
   }
 
-  contextmenu(event) {
+  public contextmenu(event: Event): void {
     if (this.enabled === false) return;
 
     event.preventDefault();
   }
 
-  dispose() {
+  public dispose(): void {
     this.domElement.removeEventListener('contextmenu', this.contextmenu, false);
     this.domElement.removeEventListener('mousedown', this.mousedown, false);
     this.domElement.removeEventListener('wheel', this.mousewheel, false);
@@ -525,6 +556,3 @@ export default class TrackballControls extends EventDispatcher {
     window.removeEventListener('keyup', this.keyup, false);
   }
 }
-
-// TrackballControls.prototype = Object.create(EventDispatcher.prototype);
-// TrackballControls.prototype.constructor = TrackballControls;

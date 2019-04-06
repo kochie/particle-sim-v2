@@ -1,17 +1,19 @@
-import React from 'react';
+import * as React from 'react';
+
 import init from '../lib/init';
+import Environment from '../lib/environment';
 
 export default class Canvas extends React.Component {
-  componentDidMount() {
+  public canvasElement: HTMLDivElement
+
+  public componentDidMount(): void {
     this.renderCanvas(init(this.canvasElement));
   }
 
-  renderCanvas(env) {
+  private renderCanvas(env: Environment): void {
     window.requestAnimationFrame(() => {
       this.renderCanvas(env);
     });
-    // console.log(env.camera.getWorldDirection());
-    // TWEEN.update();
 
     env.stats.begin();
     env.controls.update();
@@ -19,9 +21,9 @@ export default class Canvas extends React.Component {
     env.stats.end();
   }
 
-  render() {
+  public render(): React.ReactElement {
     return (
-      <div ref={(element) => { this.canvasElement = element; }} />
+      <div ref={(element) => { this.canvasElement = element }} />
     );
   }
 }

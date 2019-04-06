@@ -1,13 +1,11 @@
-/**
- * Created by rkoch on 12/28/16.
- */
-
 import { Vector3 } from 'three';
+
 import { Electron, Proton } from './particle';
+import Environment from './environment';
 
-export const randInteger = x => Math.round(Math.random() * (2 * x) - x);
+export const randInteger = (x: number): number => Math.round(Math.random() * (2 * x) - x);
 
-export const randomParticles = (env, t) => {
+export const randomParticles = (env: Environment, t: number): void => {
   for (let i = 0; i < t; i += 1) {
     if (randInteger(t) > 0) {
       env.addParticle(new Electron(
