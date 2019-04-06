@@ -96,7 +96,11 @@ export class FizzyText {
 	};
 }
 
-export default function init(canvasElement: HTMLDivElement): Environment {
+export default function init(canvasElement: HTMLCanvasElement): Environment {
+	let context = canvasElement.getContext('webgl2') as WebGLRenderingContext;
+	if (context == undefined ) {
+		context = canvasElement.getContext('webgl') || canvasElement.getContext('experimental-webgl')
+	}
 	const env = new Environment({
 		scene: new Scene(),
 		camera: new PerspectiveCamera(
@@ -105,16 +109,16 @@ export default function init(canvasElement: HTMLDivElement): Environment {
 			0.1,
 			10000
 		),
-		renderer: new WebGLRenderer({ antialias: true }),
+		renderer: new WebGLRenderer({ antialias: true, context: context, canvas: canvasElement }),
 		stats: new Stats()
 	});
 
-	canvasElement.appendChild(env.renderer.domElement);
+	// canvasElement.appendChild(env.renderer.domElement);
 
 	env.stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
 	document.body.appendChild(env.stats.dom);
 
-	env.controls = new TrackballControls(env.camera, env.renderer.domElement);
+	env.controls = new TrackballControls(env.camera, canvasElement);
 	env.controls.enableDamping = true;
 	env.controls.dampingFactor = 0.1;
 	env.controls.enableZoom = false;
