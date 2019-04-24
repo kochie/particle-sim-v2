@@ -6,7 +6,7 @@
   "scripts": {
     "start": "serve ./dist --single",
     "test": "jest --coverage",
-    "lint": "eslint ./src --fix",
+    "lint": "eslint ./src/**/*.ts --fix",
     "dev": "parcel ./src/index.html",
     "now-build": "parcel build ./src/index.html",
     "deploy": "now --token $NOW_TOKEN --target production",
@@ -31,7 +31,8 @@
     "react-redux": "^5.0.7",
     "redux": "^4.0.0",
     "stats.js": "^0.17.0",
-    "three": "^0.102.1"
+    "three": "^0.102.1",
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
     "@babel/core": "^7.4.3",
@@ -43,11 +44,12 @@
     "@types/react": "^16.8.10",
     "@types/react-dom": "^16.8.3",
     "@types/stats.js": "^0.17.0",
-    "@typescript-eslint/eslint-plugin": "^1.5.0",
+    "@types/uuid": "^3.4.4",
+    "@typescript-eslint/eslint-plugin": "^1.7.0",
     "autoprefixer": "^8.6.3",
     "babel-jest": "^24.7.0",
     "coveralls": "^3.0.1",
-    "eslint": "^5.15.3",
+    "eslint": "^5.16.0",
     "eslint-config-airbnb": "^17.0.0",
     "eslint-config-airbnb-base": "^13.0.0",
     "eslint-config-prettier": "^4.1.0",
@@ -66,8 +68,11 @@
     "typescript": "^3.4.1"
   },
   "prettier": {
-    "tabWidth": 4,
-    "useTabs": true
+    "useTabs": true,
+    "trailingComma": "all",
+    "tabWidth": 2,
+    "semi": false,
+    "singleQuote": true
   },
   "pre-commit": [
     "lint",
