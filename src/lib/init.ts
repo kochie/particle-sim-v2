@@ -2,7 +2,6 @@ import { WebGLRenderer, PerspectiveCamera, Scene, Vector3 } from "three";
 import Stats from "stats.js";
 import * as dat from "dat.gui";
 
-import { Proton, Electron, Neutron } from "./particle";
 import { positionCamera } from "./camera";
 import placeParticle from "./gui";
 import Environment from "./environment";
@@ -117,7 +116,7 @@ export default function init(canvasElement: HTMLCanvasElement): Environment {
 	env.stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
 	document.body.appendChild(env.stats.dom);
 
-	env.controls = new TrackballControls(env.camera, canvasElement);
+	env.controls = new TrackballControls(env.camera, env.renderer.domElement);
 	// env.controls.enableDamping = true;
 	// env.controls.dampingFactor = 0.1;
 	// env.controls.enableZoom = false;
