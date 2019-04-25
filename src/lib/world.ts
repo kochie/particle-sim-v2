@@ -276,10 +276,16 @@ export class World {
 			Math.pow(particle1.radius, 3) + Math.pow(particle2.radius, 3),
 			1 / 3,
 		)
+// 		const velocity = new Vector3().addVectors(
+// 			particle1.velocity,
+// 			particle2.velocity,
+// 		)
+		
 		const velocity = new Vector3().addVectors(
-			particle1.velocity,
-			particle2.velocity,
+			particle1.velocity.clone().multiplyScalar(particle1.mass/(particle1.mass+particle2.mass)),
+			particle2.velocity.clone().multiplyScalar(particle2.mass/(particle1.mass+particle2.mass))
 		)
+
 		const position = this.centerOfMass2(particle1, particle2)
 
 		const uuid = uuidv4()
