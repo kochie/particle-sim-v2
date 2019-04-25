@@ -148,7 +148,7 @@ export default class Environment {
 	): void {
 		const uuid = uuidv4()
 
-		this.createParticleMesh(charge, radius, uuid);
+		this.createParticleMesh(charge, radius, uuid, position);
 
 		this.physicsWorker.postMessage({
 			type: MessageReceiveType.ADD_PARTICLE,
@@ -161,7 +161,7 @@ export default class Environment {
 		})
 	}
 
-	public createParticleMesh(charge: number, radius: number, uuid: string): void {
+	public createParticleMesh(charge: number, radius: number, uuid: string, position = Vector3()): void {
 		let color: Color;
 		if (charge > 0) {
 			color = new Color(0x0000ff);
@@ -173,6 +173,7 @@ export default class Environment {
 			color = new Color(0xffa500);
 		}
 		const mesh = this.buildObject(radius, color);
+		mesh.position.copy(position)
 		this.scene.add(mesh);
 		this.meshMap.set(uuid, mesh);
 		this.colorMap.set(uuid, color);
