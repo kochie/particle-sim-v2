@@ -165,7 +165,12 @@ export default function init(canvasElement: HTMLCanvasElement): Environment {
 				break;
 			}
 			case MessageSendType.ADD_PARTICLE: {
-				env.createParticleMesh(message.charge, message.radius, message.uuid)
+				const position = new Vector3(
+					message.position.x,
+					message.position.y,
+					message.position.z
+				)
+				env.createParticleMesh(message.charge, message.radius, message.uuid, position)
 				break;
 			}
 			default: {
