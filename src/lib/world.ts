@@ -72,22 +72,22 @@ export class World {
 	public changeBoundarySize(size: number): void {
 		this.boundary.size = size
 		this.particles.forEach(particle => {
-			if (particle.position.x > size) {
+			if (particle.position.x + particle.radius > size) {
 				particle.position.x = (particle.position.x % size) - size
 			}
-			if (particle.position.x < -size) {
+			if (particle.position.x - particle.radius < -size) {
 				particle.position.x = (particle.position.x % size) + size
 			}
-			if (particle.position.y > size) {
+			if (particle.position.y + particle.radius > size) {
 				particle.position.y = (particle.position.y % size) - size
 			}
-			if (particle.position.y < -size) {
+			if (particle.position.y - particle.radius < -size) {
 				particle.position.y = (particle.position.y % size) + size
 			}
-			if (particle.position.z > size) {
+			if (particle.position.z + particle.radius > size) {
 				particle.position.z = (particle.position.z % size) - size
 			}
-			if (particle.position.z < -size) {
+			if (particle.position.z - particle.radius < -size) {
 				particle.position.z = (particle.position.z % size) + size
 			}
 		})
@@ -97,7 +97,7 @@ export class World {
 		const decay = 0.95
 		const size = this.boundary.size
 		const boundaryType = this.boundary.type
-		const radius = 1
+		const radius = particle.radius
 		switch (boundaryType) {
 			case BoundaryType.CLOSED: {
 				if (particle.position.x + radius > size) {
