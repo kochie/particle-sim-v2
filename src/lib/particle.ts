@@ -33,11 +33,9 @@ export class Particle {
     this.radius = radius
   }
 
-
   public updateVelocity(velocity: Vector3): void {
     this.velocity = velocity;
   }
-
 
   public calcForce(world: World): Vector3 {
     const E = world.getElectricField(this.position);

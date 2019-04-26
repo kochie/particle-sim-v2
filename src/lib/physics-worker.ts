@@ -53,4 +53,4 @@ onmessage = function(e: MessageEvent): void {
     }    
 }
 
-setInterval(() => world.update(), 0)
+setInterval((): void => world.update(), 0)

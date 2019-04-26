@@ -161,7 +161,7 @@ export default class Environment {
 		})
 	}
 
-	public createParticleMesh(charge: number, radius: number, uuid: string, position = Vector3()): void {
+	public createParticleMesh(charge: number, radius: number, uuid: string, position = new Vector3()): void {
 		let color: Color;
 		if (charge > 0) {
 			color = new Color(0x0000ff);
@@ -194,6 +194,7 @@ export default class Environment {
 	public cameraFocus(particleMesh: Mesh): void {
 		this.deselectObject()
 		particleMesh.add(this.camera)
+		this.controls.target.copy(particleMesh.position)
 		for (const [uuid, mesh] of this.meshMap) {
 			if (mesh.uuid === particleMesh.uuid) {
 				this.activeParticleUuid = uuid

@@ -53,43 +53,39 @@ export class FizzyText {
 		this.collisionType = CollisionType.NONE
 	}
 
-	public resetCamera = () => {
+	public resetCamera = (): void => {
 		this.env.resetCamera();
 	};
 
-	public moveCamera = () => {
+	public moveCamera = () : void=> {
 		this.env.moveCamera();
 	};
 
-	public placeParticle = () => {
+	public placeParticle = (): void => {
 		placeParticle(this.env, { type: ParticleType.RANDOM, speedy: false });
 	};
 
-	public placeSpeedyParticle = () => {
+	public placeSpeedyParticle = (): void => {
 		placeParticle(this.env, { type: ParticleType.RANDOM, speedy: true });
 	};
 
-	public neutron = () => {
+	public neutron = (): void => {
 		placeParticle(this.env, { type: ParticleType.NEUTRON, speedy: false });
 	};
 
-	public electron = () => {
+	public electron = (): void => {
 		placeParticle(this.env, { type: ParticleType.ELECTRON, speedy: false });
 	};
 
-	public proton = () => {
+	public proton = (): void => {
 		placeParticle(this.env, { type: ParticleType.PROTON, speedy: false });
 	};
 
-	// public stepAnimation = () => {
-	// 	animate(this.env);
-	// };
-
-	public pattern = () => {
+	public pattern = (): void => {
 		pattern(this.env);
 	};
 
-	public threeBody = () => {
+	public threeBody = (): void => {
 		threeBody(this.env);
 	};
 }
@@ -117,10 +113,11 @@ export default function init(canvasElement: HTMLCanvasElement): Environment {
 	document.body.appendChild(env.stats.dom);
 
 	env.controls = new TrackballControls(env.camera, env.renderer.domElement);
+	env.controls.rotateSpeed = 8;
+
 	// env.controls.enableDamping = true;
 	// env.controls.dampingFactor = 0.1;
 	// env.controls.enableZoom = false;
-	env.controls.rotateSpeed = 8;
 
 	positionCamera(env, new Vector3(20, 20, 20));
 
@@ -130,14 +127,14 @@ export default function init(canvasElement: HTMLCanvasElement): Environment {
 
 	window.addEventListener(
 		"mousemove",
-		(event: MouseEvent) => {
+		(event: MouseEvent): void => {
 			env.onMouseMove(event);
 		},
 		false
 	);
 	document.addEventListener(
 		"dblclick",
-		() => {
+		(): void => {
 			env.objectClick();
 		},
 		false
@@ -148,18 +145,13 @@ export default function init(canvasElement: HTMLCanvasElement): Environment {
 
 		switch(message.type) {
 			case MessageSendType.UPDATE_POSITIONS: {
-		// console.log(message)
-				message.uuid.forEach((uuid, i) => {
-					const x = message.positions[i][0]
-					const y = message.positions[i][1]
-					const z = message.positions[i][2]
+				message.uuid.forEach((uuid, i): void => {
+					const [x,y,z] = message.positions[i]
 					env.updatePosition(uuid, new Vector3(x,y,z))
-				}
-					)
+				})
 				break;
 			}
 			case MessageSendType.REMOVE_PARTICLE : {
-				console.log("WOO",message)
 				env.removeParticleMesh(message.uuid)
 				break;
 			}
@@ -178,7 +170,7 @@ export default function init(canvasElement: HTMLCanvasElement): Environment {
 		}
 	}
 
-	window.onload = () => {
+	window.onload = (): void => {
 		env.text = new FizzyText(env);
 		env.gui = new dat.GUI();
 		// env.gui.add(env.text, "particleCount").listen();
@@ -195,13 +187,13 @@ export default function init(canvasElement: HTMLCanvasElement): Environment {
 		// env.gui.add(env.text, "stepAnimation");
 		env.gui.add(env.text, "pattern");
 		env.gui.add(env.text, "threeBody");
-		env.gui.add(env.text, "gravity", 0, 10).onChange((value: number) => {
+		env.gui.add(env.text, "gravity", 0, 10).onChange((value: number): void => {
 			physicsWorker.postMessage({
 				type: MessageReceiveType.UPDATE_GRAVITY,
 				value
 			})
 		});
-		env.gui.add(env.text, "electro", 0, 10).onChange((value: number) => {
+		env.gui.add(env.text, "electro", 0, 10).onChange((value: number): void => {
 			physicsWorker.postMessage({
 				type: MessageReceiveType.UPDATE_ELECTO,
 				value
@@ -209,10 +201,10 @@ export default function init(canvasElement: HTMLCanvasElement): Environment {
 		});
 		env.gui
 			.add(env.text, "boundaryVisibility")
-			.onChange(() => env.toggleBoundaryVisibility());
+			.onChange((): void => env.toggleBoundaryVisibility());
 		env.gui
 			.add(env.text, "boundarySize", 1, 500, 1)
-			.onChange((value: number) => env.changeBoundarySize(value));
+			.onChange((value: number): void => env.changeBoundarySize(value));
 		env.gui
 			.add(env.text, "boundaryType", [
 				BoundaryType.NONE,
@@ -220,22 +212,22 @@ export default function init(canvasElement: HTMLCanvasElement): Environment {
 				BoundaryType.DELETE,
 				BoundaryType.TORUS
 			])
-			.onChange((value: BoundaryType) => env.changeBoundaryType(value));
+			.onChange((value: BoundaryType): void => env.changeBoundaryType(value));
 		env.gui
 			.add(env.text, "collisionType", [
 				CollisionType.ABSORB,
 				CollisionType.BOUNCE,
 				CollisionType.NONE
 			])
-			.onChange((value: CollisionType) => env.changeCollisionType(value))
-		env.speedController.onChange((value: number) => {
+			.onChange((value: CollisionType): void => env.changeCollisionType(value))
+		env.speedController.onChange((value: number): void => {
 			env.updateStepSize(value)
 		});
 	};
 
 	window.addEventListener(
 		"resize",
-		() => {
+		(): void => {
 			env.onWindowResize();
 		},
 		false

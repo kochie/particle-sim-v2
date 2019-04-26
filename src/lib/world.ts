@@ -39,22 +39,18 @@ export class World {
 		this.electricField = new Field()
 		this.gravityField = new Field()
 		this.sumForce = []
-
-		setInterval(() => {
-			console.log(this.particles.length)
-		}, 1000)
 	}
 
 	private calcGroupVelocity(): void {
 		this.groupVelocity = new Vector3()
-		this.particles.forEach(particle => {
+		this.particles.forEach((particle: Particle): void => {
 			this.groupVelocity.add(particle.velocity)
 		})
 	}
 
 	private calcGroupAcceleration(): void {
 		this.groupAcceleration = new Vector3()
-		this.particles.forEach(particle => {
+		this.particles.forEach((particle: Particle): void => {
 			this.groupAcceleration.add(particle.acceleration)
 		})
 	}
@@ -62,7 +58,7 @@ export class World {
 	private calcCenterOfMass(): void {
 		let totalMass = 0
 		this.centerOfMass = new Vector3()
-		this.particles.forEach(particle => {
+		this.particles.forEach((particle: Particle): void => {
 			totalMass += particle.mass
 			this.centerOfMass.add(particle.position.multiplyScalar(particle.mass))
 		})
@@ -71,7 +67,7 @@ export class World {
 
 	public changeBoundarySize(size: number): void {
 		this.boundary.size = size
-		this.particles.forEach(particle => {
+		this.particles.forEach((particle: Particle): void => {
 			if (particle.position.x + particle.radius > size) {
 				particle.position.x = (particle.position.x % size) - size
 			}
@@ -178,9 +174,9 @@ export class World {
 	}
 
 	public updatePositionAll(): void {
-		this.particles.forEach(particle => particle.calcAcceleration())
-		this.particles.forEach(particle => particle.calcKinematics(this.stepSize))
-		this.particles.forEach(particle => this.boundaryBox(particle))
+		this.particles.forEach((particle: Particle): void => particle.calcAcceleration())
+		this.particles.forEach((particle: Particle): void => particle.calcKinematics(this.stepSize))
+		this.particles.forEach((particle: Particle): void => this.boundaryBox(particle))
 		for (let i = 0; i < this.particles.length - 1; i++) {
 			for (let j = i + 1; j < this.particles.length; j++) {
 				this.calculateCollision(this.particles[i], this.particles[j])
@@ -189,17 +185,17 @@ export class World {
 
 		postMessage({
 			type: MessageSendType.UPDATE_POSITIONS,
-			positions: this.particles.map(particle => [
+			positions: this.particles.map((particle: Particle): [number, number,number] => [
 				particle.position.x,
 				particle.position.y,
 				particle.position.z,
 			]),
-			uuid: this.particles.map(particle => particle.uuid),
+			uuid: this.particles.map((particle: Particle): string => particle.uuid),
 		})
 	}
 
 	public calculateCollision(particle1: Particle, particle2: Particle): void {
-		const decay = 0.8
+		// const decay = 0.8
 
 		if (
 			particle1.position.distanceTo(particle2.position) <
@@ -344,14 +340,13 @@ export class World {
 
 	public addParticle(particle: Particle): void {
 		this.particles.push(particle)
-		console.log(this.particles.length)
 		if (this.particles.length > 1) {
 			this.sumForce.push(new Vector3())
 		}
 	}
 
 	public removeParticle(uuid: string): void {
-		const index = this.particles.findIndex(particle => particle.uuid === uuid)
+		const index = this.particles.findIndex((particle: Particle): boolean => particle.uuid === uuid)
 		this.particles.splice(index, 1)
 		this.sumForce.pop()
 	}
@@ -446,7 +441,7 @@ export class World {
 	}
 
 	/**
-	 * update
+	 * update will run a step in the simulation and update the positions of the particles
 	 */
 	public update(): void {
 		this.calculateForceAll()
@@ -454,71 +449,83 @@ export class World {
 	}
 
 	/**
-	 * setElectro
+	 * setElectro will update the electromagnetic constant
+	 * @param {number} value the value of the constant
 	 */
 	public setElectro(value: number): void {
 		this.electro = value
 	}
 
 	/**
-	 * setElectro
+	 * setGravity will update the gravitational constant
+	 * @param {number} value the value of the constant
 	 */
 	public setGravity(value: number): void {
 		this.gravity = value
 	}
 
 	/**
-	 * setStepSize
+	 * setStepSize will update the step size used in simulation solvers
+	 * @param {number} value the new step size
 	 */
 	public setStepSize(value: number): void {
 		this.stepSize = value
 	}
 
 	/**
-	 * setBoundaryType
+	 * setBoundaryType will set the type of the boundary
+	 * @param {BoundaryType} value the type of boundary
 	 */
 	public setBoundaryType(value: BoundaryType): void {
 		this.boundary.type = value
 	}
 
 	/**
-	 * setBoundarySize
+	 * setBoundarySize will set the size of the boundary
+	 * @param {number} value the size of the boundary
 	 */
 	public setBoundarySize(value: number): void {
 		this.boundary.size = value
 	}
 
 	/**
-	 * setBoundarySize
+	 * getBoundarySize will return the size of the boundary
+	 * @returns {number} the boundary size
 	 */
 	public getBoundarySize(): number {
 		return this.boundary.size
 	}
 
 	/**
-	 * setCollisionType
+	 * setCollisionType will update the collision type
+	 * @param {CollisionType} value the collision type
 	 */
 	public setCollisionType(value: CollisionType): void {
-		console.log(value)
 		this.collisionType = value
 	}
 
 	/**
-	 * getMagneticField
+	 * getMagneticField will return the stength of the magnetic field at the given position
+	 * @param {Vector3} position the position to check the stength at
+	 * @returns {Vector3} the stength of this position
 	 */
 	public getMagneticField(position: Vector3): Vector3 {
 		return this.magneticField.getValue(position)
 	}
 
 	/**
-	 * getElectricField
+	 * getElectricField will return the stength of the electric field at the given position
+	 * @param {Vector3} position the position to check the stength at
+	 * @returns {Vector3} the stength of this position
 	 */
 	public getElectricField(position: Vector3): Vector3 {
 		return this.electricField.getValue(position)
 	}
 
 	/**
-	 * getGravityField
+	 * getGravityField will return the stength of the gravitational field at the given position
+	 * @param {Vector3} position the position to check the stength at
+	 * @returns {Vector3} the stength of this position
 	 */
 	public getGravityField(position: Vector3): Vector3 {
 		return this.gravityField.getValue(position)

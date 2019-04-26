@@ -8,9 +8,9 @@ export default class Field {
   private fnZ: FieldFunction
   
   public constructor(
-    fnX: FieldFunction = () => 0,
-    fnY: FieldFunction = () => 0,
-    fnZ: FieldFunction = () => 0,
+    fnX: FieldFunction = (): number => 0,
+    fnY: FieldFunction = (): number => 0,
+    fnZ: FieldFunction = (): number => 0,
   ) {
     this.fnX = fnX;
     this.fnY = fnY;
