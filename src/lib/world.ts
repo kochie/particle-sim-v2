@@ -21,8 +21,10 @@ export class World {
 	private magneticField: Field
 	private electricField: Field
 	private gravityField: Field
+	public tick: number
 
 	public constructor() {
+		this.tick = 0
 		this.electro = 1
 		this.gravity = 1
 		this.stepSize = 0
@@ -42,6 +44,8 @@ export class World {
 
 		setInterval(() => {
 			console.log(this.particles.length)
+			console.log(`Number of physics ticks - ${this.tick}`)
+			this.tick = 0
 		}, 1000)
 	}
 
@@ -451,6 +455,7 @@ export class World {
 	public update(): void {
 		this.calculateForceAll()
 		this.updatePositionAll()
+		this.tick++
 	}
 
 	/**
