@@ -46,7 +46,10 @@ export class World {
 
 		setInterval((): void => {
 			console.log(this.particles.length)
-			console.log(`Number of physics ticks - ${this.tick} in ${performance.now()-this.tock}ms`)
+			console.log(
+				`Number of physics ticks - ${this.tick} in ${performance.now() -
+					this.tock}ms`,
+			)
 			this.tick = 0
 			this.tock = performance.now()
 		}, 1000)
@@ -54,53 +57,61 @@ export class World {
 
 	public calcGroupVelocity(): Vector3 {
 		this.groupVelocity = new Vector3()
-		this.particles.forEach((particle: Particle): void => {
-			this.groupVelocity.add(particle.velocity)
-		})
+		this.particles.forEach(
+			(particle: Particle): void => {
+				this.groupVelocity.add(particle.velocity)
+			},
+		)
 		return this.groupVelocity
 	}
 
 	public calcGroupAcceleration(): Vector3 {
 		this.groupAcceleration = new Vector3()
-		this.particles.forEach((particle: Particle): void => {
-			this.groupAcceleration.add(particle.acceleration)
-		})
+		this.particles.forEach(
+			(particle: Particle): void => {
+				this.groupAcceleration.add(particle.acceleration)
+			},
+		)
 		return this.groupAcceleration
 	}
 
 	public calcCenterOfMass(): Vector3 {
 		let totalMass = 0
 		this.centerOfMass = new Vector3()
-		this.particles.forEach((particle: Particle): void => {
-			totalMass += particle.mass
-			this.centerOfMass.add(particle.position.multiplyScalar(particle.mass))
-		})
+		this.particles.forEach(
+			(particle: Particle): void => {
+				totalMass += particle.mass
+				this.centerOfMass.add(particle.position.multiplyScalar(particle.mass))
+			},
+		)
 		this.centerOfMass.divideScalar(totalMass)
 		return this.centerOfMass
 	}
 
 	public changeBoundarySize(size: number): void {
 		this.boundary.size = size
-		this.particles.forEach((particle: Particle): void => {
-			if (particle.position.x + particle.radius > size) {
-				particle.position.x = (particle.position.x % size) - size
-			}
-			if (particle.position.x - particle.radius < -size) {
-				particle.position.x = (particle.position.x % size) + size
-			}
-			if (particle.position.y + particle.radius > size) {
-				particle.position.y = (particle.position.y % size) - size
-			}
-			if (particle.position.y - particle.radius < -size) {
-				particle.position.y = (particle.position.y % size) + size
-			}
-			if (particle.position.z + particle.radius > size) {
-				particle.position.z = (particle.position.z % size) - size
-			}
-			if (particle.position.z - particle.radius < -size) {
-				particle.position.z = (particle.position.z % size) + size
-			}
-		})
+		this.particles.forEach(
+			(particle: Particle): void => {
+				if (particle.position.x + particle.radius > size) {
+					particle.position.x = (particle.position.x % size) - size
+				}
+				if (particle.position.x - particle.radius < -size) {
+					particle.position.x = (particle.position.x % size) + size
+				}
+				if (particle.position.y + particle.radius > size) {
+					particle.position.y = (particle.position.y % size) - size
+				}
+				if (particle.position.y - particle.radius < -size) {
+					particle.position.y = (particle.position.y % size) + size
+				}
+				if (particle.position.z + particle.radius > size) {
+					particle.position.z = (particle.position.z % size) - size
+				}
+				if (particle.position.z - particle.radius < -size) {
+					particle.position.z = (particle.position.z % size) + size
+				}
+			},
+		)
 	}
 
 	public boundaryBox(particle: Particle): void {
@@ -175,7 +186,7 @@ export class World {
 					this.removeParticle(particle.uuid)
 					postMessage({
 						type: MessageSendType.REMOVE_PARTICLE,
-						uuid: particle.uuid
+						uuid: particle.uuid,
 					})
 				}
 				break
@@ -188,9 +199,15 @@ export class World {
 	}
 
 	public updatePositionAll(): void {
-		this.particles.forEach((particle: Particle): void => particle.calcAcceleration())
-		this.particles.forEach((particle: Particle): void => particle.calcKinematics(this.stepSize))
-		this.particles.forEach((particle: Particle): void => this.boundaryBox(particle))
+		this.particles.forEach(
+			(particle: Particle): void => particle.calcAcceleration(),
+		)
+		this.particles.forEach(
+			(particle: Particle): void => particle.calcKinematics(this.stepSize),
+		)
+		this.particles.forEach(
+			(particle: Particle): void => this.boundaryBox(particle),
+		)
 		for (let i = 0; i < this.particles.length - 1; i++) {
 			for (let j = i + 1; j < this.particles.length; j++) {
 				this.calculateCollision(this.particles[i], this.particles[j])
@@ -202,21 +219,28 @@ export class World {
 		const positionsY = new Float64Array(this.particles.length)
 		const positionsZ = new Float64Array(this.particles.length)
 
-		this.particles.forEach((particle: Particle, index: number): void => {
-			positionsX[index] = particle.position.x
-			positionsY[index] = particle.position.y
-			positionsZ[index] = particle.position.z
-		}) 
+		this.particles.forEach(
+			(particle: Particle, index: number): void => {
+				positionsX[index] = particle.position.x
+				positionsY[index] = particle.position.y
+				positionsZ[index] = particle.position.z
+			},
+		)
 
-		const uuid = this.particles.map((particle: Particle): string => particle.uuid)
+		const uuid = this.particles.map(
+			(particle: Particle): string => particle.uuid,
+		)
 
-		postMessage({
-			type: MessageSendType.UPDATE_POSITIONS,
-			positionsX,
-			positionsY,
-			positionsZ,
-			uuid 
-		}, [positionsX.buffer, positionsY.buffer, positionsZ.buffer])
+		postMessage(
+			{
+				type: MessageSendType.UPDATE_POSITIONS,
+				positionsX,
+				positionsY,
+				positionsZ,
+				uuid,
+			},
+			[positionsX.buffer, positionsY.buffer, positionsZ.buffer],
+		)
 		const deltaT = performance.now() - tick
 		if (deltaT > 100) {
 			console.log(`Post time: ${deltaT}ms`)
@@ -299,14 +323,18 @@ export class World {
 			Math.pow(particle1.radius, 3) + Math.pow(particle2.radius, 3),
 			1 / 3,
 		)
-// 		const velocity = new Vector3().addVectors(
-// 			particle1.velocity,
-// 			particle2.velocity,
-// 		)
-		
+		// 		const velocity = new Vector3().addVectors(
+		// 			particle1.velocity,
+		// 			particle2.velocity,
+		// 		)
+
 		const velocity = new Vector3().addVectors(
-			particle1.velocity.clone().multiplyScalar(particle1.mass/(particle1.mass+particle2.mass)),
-			particle2.velocity.clone().multiplyScalar(particle2.mass/(particle1.mass+particle2.mass))
+			particle1.velocity
+				.clone()
+				.multiplyScalar(particle1.mass / (particle1.mass + particle2.mass)),
+			particle2.velocity
+				.clone()
+				.multiplyScalar(particle2.mass / (particle1.mass + particle2.mass)),
 		)
 
 		const position = this.centerOfMass2(particle1, particle2)
@@ -314,7 +342,9 @@ export class World {
 		const uuid = uuidv4()
 		this.removeParticle(particle1.uuid)
 		this.removeParticle(particle2.uuid)
-		this.addParticle(new Particle(uuid, charge, position, velocity, radius, mass))
+		this.addParticle(
+			new Particle(uuid, charge, position, velocity, radius, mass),
+		)
 		postMessage({
 			type: MessageSendType.REMOVE_PARTICLE,
 			uuid: particle1.uuid,
@@ -323,7 +353,6 @@ export class World {
 			type: MessageSendType.REMOVE_PARTICLE,
 			uuid: particle2.uuid,
 		})
-
 
 		postMessage({
 			type: MessageSendType.ADD_PARTICLE,
@@ -334,7 +363,7 @@ export class World {
 			mass,
 			radius,
 		})
-		console.log("length", this.particles.length)
+		console.log('length', this.particles.length)
 	}
 
 	private centerOfMass2(particle1: Particle, particle2: Particle): Vector3 {
@@ -373,7 +402,9 @@ export class World {
 	}
 
 	public removeParticle(uuid: string): void {
-		const index = this.particles.findIndex((particle: Particle): boolean => particle.uuid === uuid)
+		const index = this.particles.findIndex(
+			(particle: Particle): boolean => particle.uuid === uuid,
+		)
 		this.particles.splice(index, 1)
 		this.sumForce.pop()
 	}
@@ -406,8 +437,8 @@ export class World {
 
 		const particle = this.particles[i - 1]
 
-		const E = this.getElectricField(particle.position);
-		const B = this.getMagneticField(particle.position);
+		const E = this.getElectricField(particle.position)
+		const B = this.getMagneticField(particle.position)
 		const G = this.getGravityField(particle.position)
 
 		const fieldForce = particle.calcForce(E, B, G)

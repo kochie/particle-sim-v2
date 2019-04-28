@@ -42,10 +42,10 @@ export enum CollisionType {
 	NONE = 'NONE',
 }
 
-export type SentMessage = 
+export type SentMessage =
 	| {
-      type: MessageSendType.ADD_PARTICLE
-      uuid: string
+			type: MessageSendType.ADD_PARTICLE
+			uuid: string
 			position: Vector3
 			velocity: Vector3
 			charge: number
@@ -55,14 +55,14 @@ export type SentMessage =
 	| {
 			type: MessageSendType.REMOVE_PARTICLE
 			uuid: string
-    }
-    | {
-      type: MessageSendType.UPDATE_POSITIONS
-      positionsX: Float64Array
-      positionsY: Float64Array
-      positionsZ: Float64Array
-      uuid: [string]
-    }
+	  }
+	| {
+			type: MessageSendType.UPDATE_POSITIONS
+			positionsX: Float64Array
+			positionsY: Float64Array
+			positionsZ: Float64Array
+			uuid: [string]
+	  }
 
 export type Message =
 	| {
@@ -90,8 +90,8 @@ export type Message =
 			value: CollisionType
 	  }
 	| {
-      type: MessageReceiveType.ADD_PARTICLE
-      uuid: string
+			type: MessageReceiveType.ADD_PARTICLE
+			uuid: string
 			position: Vector3
 			velocity: Vector3
 			charge: number
@@ -101,4 +101,4 @@ export type Message =
 	| {
 			type: MessageReceiveType.REMOVE_PARTICLE
 			uuid: string
-    }
+	  }

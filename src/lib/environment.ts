@@ -16,7 +16,7 @@ import {
 import TrackballControls from './TrackballControls'
 import { FizzyText } from './init'
 import { MessageReceiveType, BoundaryType, CollisionType } from './messages'
-import {v4 as uuidv4} from 'uuid'
+import { v4 as uuidv4 } from 'uuid'
 
 interface Options {
 	scene: Scene
@@ -28,6 +28,12 @@ interface Options {
 
 function isMesh(object: Object3D): object is Mesh {
 	return !!(object as Mesh).isMesh
+}
+
+export enum ParticleColors {
+	POSITIVE = 0x0000ff,
+	NEGATIVE = 0x00ff00,
+	NEUTRAL = 0xffa500,
 }
 
 export default class Environment {
@@ -75,7 +81,7 @@ export default class Environment {
 			type: BoundaryType.CLOSED,
 			size: 50,
 			mesh: null,
-			visible: true
+			visible: true,
 		}
 		this.drawBoundary()
 
@@ -118,7 +124,7 @@ export default class Environment {
 	}
 
 	public removeParticle(uuid: string): void {
-		this.removeParticleMesh(uuid);
+		this.removeParticleMesh(uuid)
 		this.physicsWorker.postMessage({
 			type: MessageReceiveType.REMOVE_PARTICLE,
 			uuid,
@@ -126,21 +132,26 @@ export default class Environment {
 	}
 
 	public removeParticleMesh(uuid: string): void {
-		const mesh = this.meshMap.get(uuid);
+		const mesh = this.meshMap.get(uuid)
 		if (uuid === this.activeParticleUuid) {
-			this.deselectObject();
+			this.deselectObject()
 		}
-		this.scene.remove(mesh);
-		this.meshMap.delete(uuid);
-		this.colorMap.delete(uuid);
+		this.scene.remove(mesh)
+		this.meshMap.delete(uuid)
+		this.colorMap.delete(uuid)
 	}
 
 	public updatePosition(uuid: string, position: Vector3): void {
 		this.meshMap.get(uuid).position.copy(position)
 	}
 
-	public updatePositionParts(uuid: string, x: number, y: number, z: number): void {
-		this.meshMap.get(uuid).position.set(x,y,z)
+	public updatePositionParts(
+		uuid: string,
+		x: number,
+		y: number,
+		z: number,
+	): void {
+		this.meshMap.get(uuid).position.set(x, y, z)
 	}
 
 	public addParticle(
@@ -149,10 +160,10 @@ export default class Environment {
 		charge: number,
 		mass: number,
 		radius: number,
-	): void {
+	): string {
 		const uuid = uuidv4()
 
-		this.createParticleMesh(charge, radius, uuid, position);
+		this.createParticleMesh(charge, radius, uuid, position)
 
 		this.physicsWorker.postMessage({
 			type: MessageReceiveType.ADD_PARTICLE,
@@ -163,24 +174,29 @@ export default class Environment {
 			mass,
 			radius,
 		})
+
+		return uuid
 	}
 
-	public createParticleMesh(charge: number, radius: number, uuid: string, position = new Vector3()): void {
-		let color: Color;
+	public createParticleMesh(
+		charge: number,
+		radius: number,
+		uuid: string,
+		position = new Vector3(),
+	): void {
+		let color: Color
 		if (charge > 0) {
-			color = new Color(0x0000ff);
+			color = new Color(ParticleColors.POSITIVE)
+		} else if (charge < 0) {
+			color = new Color(ParticleColors.NEGATIVE)
+		} else {
+			color = new Color(ParticleColors.NEUTRAL)
 		}
-		else if (charge < 0) {
-			color = new Color(0x00ff00);
-		}
-		else {
-			color = new Color(0xffa500);
-		}
-		const mesh = this.buildObject(radius, color);
+		const mesh = this.buildObject(radius, color)
 		mesh.position.copy(position)
-		this.scene.add(mesh);
-		this.meshMap.set(uuid, mesh);
-		this.colorMap.set(uuid, color);
+		this.scene.add(mesh)
+		this.meshMap.set(uuid, mesh)
+		this.colorMap.set(uuid, color)
 	}
 
 	private buildObject(radius: number, color: Color): Mesh {
@@ -224,8 +240,8 @@ export default class Environment {
 		this.controls.update()
 	}
 
-	public moveCamera(): void {
-		this.controls.target = new Vector3(10, 20, 30)
+	public moveCamera(position = new Vector3(10, 20, 30)): void {
+		this.controls.target = position
 	}
 
 	public onWindowResize(): void {
@@ -257,7 +273,7 @@ export default class Environment {
 		this.boundary.type = type
 		this.physicsWorker.postMessage({
 			type: MessageReceiveType.UPDATE_BOUNDARY_TYPE,
-			value: type
+			value: type,
 		})
 		this.redrawBoundary()
 	}
@@ -266,7 +282,7 @@ export default class Environment {
 		this.boundary.size = size
 		this.physicsWorker.postMessage({
 			type: MessageReceiveType.UPDATE_BOUNDARY_SIZE,
-			value: size
+			value: size,
 		})
 		this.redrawBoundary()
 	}
@@ -279,18 +295,22 @@ export default class Environment {
 	public changeCollisionType(type: CollisionType): void {
 		this.physicsWorker.postMessage({
 			type: MessageReceiveType.CHANGE_COLLISION_TYPE,
-			value: type
+			value: type,
 		})
 	}
 
 	public updateStepSize(stepSize: number): void {
 		this.physicsWorker.postMessage({
 			type: MessageReceiveType.UPDATE_STEP_SIZE,
-			stepSize
+			stepSize,
 		})
 	}
 
 	public getBoundarySize(): number {
 		return this.boundary.size
+	}
+
+	public getMesh(uuid: string): Mesh {
+		return this.meshMap.get(uuid)
 	}
 }
