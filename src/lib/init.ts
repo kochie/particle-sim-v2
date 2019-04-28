@@ -9,11 +9,6 @@ import TrackballControls from "./TrackballControls";
 import buildAxes from "./axis";
 import { BoundaryType, CollisionType, ParticleType, MessageReceiveType, SentMessage, MessageSendType } from "./messages";
 
-// function animate(env: Environment): void {
-// 	env.particleGroup.calculateForceAll(env);
-// 	env.particleGroup.updatePositionAll();
-// }
-
 export function pattern(env: Environment): void {
 	env.addParticle(new Vector3(-15, 0, 0), new Vector3(), -1, 1, 1);
 	env.addParticle(new Vector3(15, 0, 0), new Vector3(), -1, 1, 1);
@@ -146,8 +141,12 @@ export default function init(canvasElement: HTMLCanvasElement): Environment {
 		switch(message.type) {
 			case MessageSendType.UPDATE_POSITIONS: {
 				message.uuid.forEach((uuid, i): void => {
-					const [x,y,z] = message.positions[i]
-					env.updatePosition(uuid, new Vector3(x,y,z))
+					env.updatePositionParts(
+						uuid,
+						message.positionsX[i],
+						message.positionsY[i],
+						message.positionsZ[i]
+					)
 				})
 				break;
 			}

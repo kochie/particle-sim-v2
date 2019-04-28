@@ -12,9 +12,9 @@ export enum MessageReceiveType {
 }
 
 export enum MessageSendType {
-	ADD_PARTICLE = 'ADD_PARTICLE_1',
-	REMOVE_PARTICLE = 'REMOVE_PARTICLE_1',
-	UPDATE_POSITIONS = 'UPDATE_POSITIONS_1',
+	ADD_PARTICLE = 'ADD_PARTICLE',
+	REMOVE_PARTICLE = 'REMOVE_PARTICLE',
+	UPDATE_POSITIONS = 'UPDATE_POSITIONS',
 }
 
 export enum ParticleType {
@@ -58,7 +58,9 @@ export type SentMessage =
     }
     | {
       type: MessageSendType.UPDATE_POSITIONS
-      positions: [[number, number, number]]
+      positionsX: Float64Array
+      positionsY: Float64Array
+      positionsZ: Float64Array
       uuid: [string]
     }
 

@@ -21,10 +21,12 @@ export class World {
 	private magneticField: Field
 	private electricField: Field
 	private gravityField: Field
-	public tick: number
+	private tick: number
+	private tock: number
 
 	public constructor() {
 		this.tick = 0
+		this.tock = performance.now()
 		this.electro = 1
 		this.gravity = 1
 		this.stepSize = 0
@@ -44,26 +46,29 @@ export class World {
 
 		setInterval((): void => {
 			console.log(this.particles.length)
-			console.log(`Number of physics ticks - ${this.tick}`)
+			console.log(`Number of physics ticks - ${this.tick} in ${performance.now()-this.tock}ms`)
 			this.tick = 0
+			this.tock = performance.now()
 		}, 1000)
 	}
 
-	private calcGroupVelocity(): void {
+	public calcGroupVelocity(): Vector3 {
 		this.groupVelocity = new Vector3()
 		this.particles.forEach((particle: Particle): void => {
 			this.groupVelocity.add(particle.velocity)
 		})
+		return this.groupVelocity
 	}
 
-	private calcGroupAcceleration(): void {
+	public calcGroupAcceleration(): Vector3 {
 		this.groupAcceleration = new Vector3()
 		this.particles.forEach((particle: Particle): void => {
 			this.groupAcceleration.add(particle.acceleration)
 		})
+		return this.groupAcceleration
 	}
 
-	private calcCenterOfMass(): void {
+	public calcCenterOfMass(): Vector3 {
 		let totalMass = 0
 		this.centerOfMass = new Vector3()
 		this.particles.forEach((particle: Particle): void => {
@@ -71,6 +76,7 @@ export class World {
 			this.centerOfMass.add(particle.position.multiplyScalar(particle.mass))
 		})
 		this.centerOfMass.divideScalar(totalMass)
+		return this.centerOfMass
 	}
 
 	public changeBoundarySize(size: number): void {
@@ -191,20 +197,33 @@ export class World {
 			}
 		}
 
+		const tick = performance.now()
+		const positionsX = new Float64Array(this.particles.length)
+		const positionsY = new Float64Array(this.particles.length)
+		const positionsZ = new Float64Array(this.particles.length)
+
+		this.particles.forEach((particle: Particle, index: number): void => {
+			positionsX[index] = particle.position.x
+			positionsY[index] = particle.position.y
+			positionsZ[index] = particle.position.z
+		}) 
+
+		const uuid = this.particles.map((particle: Particle): string => particle.uuid)
+
 		postMessage({
 			type: MessageSendType.UPDATE_POSITIONS,
-			positions: this.particles.map((particle: Particle): [number, number,number] => [
-				particle.position.x,
-				particle.position.y,
-				particle.position.z,
-			]),
-			uuid: this.particles.map((particle: Particle): string => particle.uuid),
-		})
+			positionsX,
+			positionsY,
+			positionsZ,
+			uuid 
+		}, [positionsX.buffer, positionsY.buffer, positionsZ.buffer])
+		const deltaT = performance.now() - tick
+		if (deltaT > 100) {
+			console.log(`Post time: ${deltaT}ms`)
+		}
 	}
 
 	public calculateCollision(particle1: Particle, particle2: Particle): void {
-		// const decay = 0.8
-
 		if (
 			particle1.position.distanceTo(particle2.position) <
 			particle1.radius + particle2.radius
@@ -384,7 +403,14 @@ export class World {
 		for (let x = 1; x <= this.particles.length; x += 1) {
 			value.add(this.getForceValue(i, x))
 		}
-		const fieldForce = this.particles[i - 1].calcForce(this)
+
+		const particle = this.particles[i - 1]
+
+		const E = this.getElectricField(particle.position);
+		const B = this.getMagneticField(particle.position);
+		const G = this.getGravityField(particle.position)
+
+		const fieldForce = particle.calcForce(E, B, G)
 		value.add(fieldForce)
 		return value
 	}

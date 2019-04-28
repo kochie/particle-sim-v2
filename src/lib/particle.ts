@@ -37,10 +37,7 @@ export class Particle {
     this.velocity = velocity;
   }
 
-  public calcForce(world: World): Vector3 {
-    const E = world.getElectricField(this.position);
-    const B = world.getMagneticField(this.position);
-    const G = world.getGravityField(this.position)
+  public calcForce(E: Vector3, B: Vector3, G: Vector3): Vector3 {
     const q = this.charge;
     const m = this.mass;
     const v = this.velocity.clone();
@@ -93,24 +90,4 @@ export class Particle {
       }
     }
   }
-
-
 }
-
-// export class Neutron extends Particle {
-//   public constructor(position: Vector3, velocity: Vector3 = new Vector3(), radius = 1, mass = 1) {
-//     super(0, position, velocity, radius, mass);
-//   }
-// }
-
-// export class Proton extends Particle {
-//   public constructor(position: Vector3, velocity: Vector3 = new Vector3(), radius = 1, mass = 1) {
-//     super(1, position, velocity, radius, mass);
-//   }
-// }
-
-// export class Electron extends Particle {
-//   public constructor(position: Vector3, velocity: Vector3 = new Vector3(), radius = 1, mass = 1) {
-//     super(-1, position, velocity, radius, mass);
-//   }
-// }

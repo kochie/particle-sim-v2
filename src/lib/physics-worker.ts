@@ -44,7 +44,6 @@ onmessage = function(e: MessageEvent): void {
         }
         case MessageReceiveType.REMOVE_PARTICLE: {
             world.removeParticle(message.uuid)
-            console.log("ASA")
             break
         }
         default: {

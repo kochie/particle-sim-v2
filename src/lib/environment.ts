@@ -139,6 +139,10 @@ export default class Environment {
 		this.meshMap.get(uuid).position.copy(position)
 	}
 
+	public updatePositionParts(uuid: string, x: number, y: number, z: number): void {
+		this.meshMap.get(uuid).position.set(x,y,z)
+	}
+
 	public addParticle(
 		position: Vector3,
 		velocity: Vector3,

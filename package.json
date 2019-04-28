@@ -11,7 +11,8 @@
     "now-build": "parcel build ./src/index.html",
     "deploy": "now --token $NOW_TOKEN --target production",
     "validate": "npm ls",
-    "coverage": "jest --coverage --coverageReporters=text-lcov | coveralls"
+    "coverage": "jest --coverage --coverageReporters=text-lcov | coveralls",
+    "benchmark": "benchtop"
   },
   "repository": {
     "type": "git",
