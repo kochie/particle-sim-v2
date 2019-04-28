@@ -2,34 +2,27 @@ import { WebGLRenderer, PerspectiveCamera, Scene, Vector3 } from "three";
 import Stats from "stats.js";
 import * as dat from "dat.gui";
 
-import { Proton, Electron, Neutron, BoundaryType, CollisionType } from "./particle";
-import { positionCamera, resetCamera, objectClick } from "./camera";
-import placeParticle, { ParticleType } from "./gui";
+import { positionCamera } from "./camera";
+import placeParticle from "./gui";
 import Environment from "./environment";
 import TrackballControls from "./TrackballControls";
 import buildAxes from "./axis";
-
-function animate(env: Environment): void {
-	env.particleGroup.calculateForceAll(env);
-	env.particleGroup.updatePositionAll();
-}
+import { BoundaryType, CollisionType, ParticleType, MessageReceiveType, SentMessage, MessageSendType } from "./messages";
 
 export function pattern(env: Environment): void {
-	env.addParticle(new Electron(new Vector3(-15, 0, 0)));
-	env.addParticle(new Electron(new Vector3(15, 0, 0)));
-	env.addParticle(new Proton(new Vector3(0, 5, 0)));
-	env.addParticle(new Proton(new Vector3(2, 5, 2)));
-	env.addParticle(new Proton(new Vector3(-2, 5, -2)));
+	env.addParticle(new Vector3(-15, 0, 0), new Vector3(), -1, 1, 1);
+	env.addParticle(new Vector3(15, 0, 0), new Vector3(), -1, 1, 1);
+	env.addParticle(new Vector3(0, 5, 0), new Vector3(), 1, 1, 1);
+	env.addParticle(new Vector3(2, 5, 2), new Vector3(), 1, 1, 1);
+	env.addParticle(new Vector3(-2, 5, -2), new Vector3(), 1, 1, 1);
 }
 
 export function threeBody(env: Environment): void {
 	const p1 = 0.347111;
 	const p2 = 0.532728;
-	env.addParticle(new Neutron(new Vector3(-1, 0, 0), new Vector3(p1, p2, 0)));
-	env.addParticle(new Neutron(new Vector3(1, 0, 0), new Vector3(p1, p2, 0)));
-	env.addParticle(
-		new Neutron(new Vector3(0, 0, 0), new Vector3(-2 * p1, -2 * p2))
-	);
+	env.addParticle(new Vector3(-1, 0, 0), new Vector3(p1, p2, 0), 0, 1, 1);
+	env.addParticle(new Vector3(1, 0, 0), new Vector3(p1, p2, 0), 0, 1, 1);
+	env.addParticle(new Vector3(0, 0, 0), new Vector3(-2 * p1, -2 * p2, 0), 0, 1, 1)
 }
 
 export class FizzyText {
@@ -45,53 +38,49 @@ export class FizzyText {
 
 	public constructor(env: Environment) {
 		this.env = env;
-		this.particleCount = env.particleGroup.particles.length.toString();
-		this.speed = 0;
+		// this.particleCount = env.particles.length.toString();
+		this["Step Size"] = 0;
 		this.gravity = 1;
 		this.electro = 1;
 		this.boundaryVisibility = true;
 		this.boundaryType = BoundaryType.CLOSED;
 		this.boundarySize = 50;
-		this.collisionType = CollisionType.ABSORB
+		this.collisionType = CollisionType.NONE
 	}
 
-	public resetCamera = () => {
-		resetCamera(this.env);
+	public resetCamera = (): void => {
+		this.env.resetCamera();
 	};
 
-	public moveCamera = () => {
+	public moveCamera = () : void=> {
 		this.env.moveCamera();
 	};
 
-	public placeParticle = () => {
+	public placeParticle = (): void => {
 		placeParticle(this.env, { type: ParticleType.RANDOM, speedy: false });
 	};
 
-	public placeSpeedyParticle = () => {
+	public placeSpeedyParticle = (): void => {
 		placeParticle(this.env, { type: ParticleType.RANDOM, speedy: true });
 	};
 
-	public neutron = () => {
+	public neutron = (): void => {
 		placeParticle(this.env, { type: ParticleType.NEUTRON, speedy: false });
 	};
 
-	public electron = () => {
+	public electron = (): void => {
 		placeParticle(this.env, { type: ParticleType.ELECTRON, speedy: false });
 	};
 
-	public proton = () => {
+	public proton = (): void => {
 		placeParticle(this.env, { type: ParticleType.PROTON, speedy: false });
 	};
 
-	public stepAnimation = () => {
-		animate(this.env);
-	};
-
-	public pattern = () => {
+	public pattern = (): void => {
 		pattern(this.env);
 	};
 
-	public threeBody = () => {
+	public threeBody = (): void => {
 		threeBody(this.env);
 	};
 }
@@ -101,6 +90,7 @@ export default function init(canvasElement: HTMLCanvasElement): Environment {
 	if (context == undefined ) {
 		context = canvasElement.getContext('webgl') || canvasElement.getContext('experimental-webgl')
 	}
+	const physicsWorker = new Worker('./physics-worker.ts');
 	const env = new Environment({
 		scene: new Scene(),
 		camera: new PerspectiveCamera(
@@ -110,50 +100,81 @@ export default function init(canvasElement: HTMLCanvasElement): Environment {
 			10000
 		),
 		renderer: new WebGLRenderer({ antialias: true, context: context, canvas: canvasElement }),
-		stats: new Stats()
+		stats: new Stats(),
+		physicsWorker
 	});
-
-	// canvasElement.appendChild(env.renderer.domElement);
 
 	env.stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
 	document.body.appendChild(env.stats.dom);
 
-	env.controls = new TrackballControls(env.camera, canvasElement);
-	env.controls.enableDamping = true;
-	env.controls.dampingFactor = 0.1;
-	env.controls.enableZoom = false;
+	env.controls = new TrackballControls(env.camera, env.renderer.domElement);
 	env.controls.rotateSpeed = 8;
 
-	// console.log(positionCamera);
+	// env.controls.enableDamping = true;
+	// env.controls.dampingFactor = 0.1;
+	// env.controls.enableZoom = false;
+
 	positionCamera(env, new Vector3(20, 20, 20));
 
 	env.cameraStart.position = env.camera.position.clone();
 	env.cameraStart.target = env.controls.target.clone();
 	env.cameraStart.up = env.camera.up.clone();
 
-	env.setAnimation(animate);
-
 	window.addEventListener(
 		"mousemove",
-		(event: MouseEvent) => {
+		(event: MouseEvent): void => {
 			env.onMouseMove(event);
 		},
 		false
 	);
 	document.addEventListener(
 		"dblclick",
-		() => {
-			objectClick(env);
+		(): void => {
+			env.objectClick();
 		},
 		false
 	);
 
-	window.onload = () => {
+	physicsWorker.onmessage = function(e: MessageEvent): void {
+		const message = e.data as SentMessage
+
+		switch(message.type) {
+			case MessageSendType.UPDATE_POSITIONS: {
+				message.uuid.forEach((uuid, i): void => {
+					env.updatePositionParts(
+						uuid,
+						message.positionsX[i],
+						message.positionsY[i],
+						message.positionsZ[i]
+					)
+				})
+				break;
+			}
+			case MessageSendType.REMOVE_PARTICLE : {
+				env.removeParticleMesh(message.uuid)
+				break;
+			}
+			case MessageSendType.ADD_PARTICLE: {
+				const position = new Vector3(
+					message.position.x,
+					message.position.y,
+					message.position.z
+				)
+				env.createParticleMesh(message.charge, message.radius, message.uuid, position)
+				break;
+			}
+			default: {
+				break;
+			}
+		}
+	}
+
+	window.onload = (): void => {
 		env.text = new FizzyText(env);
 		env.gui = new dat.GUI();
-		env.gui.add(env.text, "particleCount").listen();
+		// env.gui.add(env.text, "particleCount").listen();
 		env.speedController = env.gui
-			.add(env.text, "speed", 0, 100, 2)
+			.add(env.text, "Step Size", 0, 0.01, 0.0005)
 			.listen();
 		env.gui.add(env.text, "resetCamera");
 		env.gui.add(env.text, "moveCamera");
@@ -162,21 +183,27 @@ export default function init(canvasElement: HTMLCanvasElement): Environment {
 		env.gui.add(env.text, "neutron");
 		env.gui.add(env.text, "electron");
 		env.gui.add(env.text, "proton");
-		env.gui.add(env.text, "stepAnimation");
+		// env.gui.add(env.text, "stepAnimation");
 		env.gui.add(env.text, "pattern");
 		env.gui.add(env.text, "threeBody");
-		env.gui.add(env.text, "gravity", 0, 10).onChange((value: number) => {
-			env.particleGroup.gravity = value;
+		env.gui.add(env.text, "gravity", 0, 10).onChange((value: number): void => {
+			physicsWorker.postMessage({
+				type: MessageReceiveType.UPDATE_GRAVITY,
+				value
+			})
 		});
-		env.gui.add(env.text, "electro", 0, 10).onChange((value: number) => {
-			env.particleGroup.electro = value;
+		env.gui.add(env.text, "electro", 0, 10).onChange((value: number): void => {
+			physicsWorker.postMessage({
+				type: MessageReceiveType.UPDATE_ELECTO,
+				value
+			})
 		});
 		env.gui
 			.add(env.text, "boundaryVisibility")
-			.onChange(() => env.particleGroup.toggleBoundaryVisibility());
+			.onChange((): void => env.toggleBoundaryVisibility());
 		env.gui
 			.add(env.text, "boundarySize", 1, 500, 1)
-			.onChange((value: number) => env.particleGroup.changeBoundarySize(value));
+			.onChange((value: number): void => env.changeBoundarySize(value));
 		env.gui
 			.add(env.text, "boundaryType", [
 				BoundaryType.NONE,
@@ -184,23 +211,22 @@ export default function init(canvasElement: HTMLCanvasElement): Environment {
 				BoundaryType.DELETE,
 				BoundaryType.TORUS
 			])
-			.onChange((value: BoundaryType) => env.particleGroup.changeBoundaryType(value));
+			.onChange((value: BoundaryType): void => env.changeBoundaryType(value));
 		env.gui
 			.add(env.text, "collisionType", [
 				CollisionType.ABSORB,
 				CollisionType.BOUNCE,
 				CollisionType.NONE
 			])
-			.onChange((value: CollisionType) => env.particleGroup.changeCollisionType(value))
-		env.speedController.onChange((value: number) => {
-			env.stepTime = 100 - value;
-			env.setAnimation(animate);
+			.onChange((value: CollisionType): void => env.changeCollisionType(value))
+		env.speedController.onChange((value: number): void => {
+			env.updateStepSize(value)
 		});
 	};
 
 	window.addEventListener(
 		"resize",
-		() => {
+		(): void => {
 			env.onWindowResize();
 		},
 		false

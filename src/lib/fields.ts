@@ -1,6 +1,6 @@
 import { Vector3 } from 'three';
 
-type FieldFunction = (x: number, y: number, z: number) => number
+type FieldFunction = (x: number, y: number, z: number, t: number) => number
 
 export default class Field {
   private fnX: FieldFunction
@@ -8,9 +8,9 @@ export default class Field {
   private fnZ: FieldFunction
   
   public constructor(
-    fnX: FieldFunction = () => 0,
-    fnY: FieldFunction = () => 0,
-    fnZ: FieldFunction = () => 0,
+    fnX: FieldFunction = (): number => 0,
+    fnY: FieldFunction = (): number => 0,
+    fnZ: FieldFunction = (): number => 0,
   ) {
     this.fnX = fnX;
     this.fnY = fnY;
@@ -18,10 +18,11 @@ export default class Field {
   }
 
   public getValue(position: Vector3): Vector3 {
+    const time = new Date().getSeconds()
     return new Vector3(
-      this.fnX(position.x, position.y, position.z),
-      this.fnY(position.x, position.y, position.z),
-      this.fnZ(position.x, position.y, position.z),
+      this.fnX(position.x, position.y, position.z, time),
+      this.fnY(position.x, position.y, position.z, time),
+      this.fnZ(position.x, position.y, position.z, time),
     );
   }
 }

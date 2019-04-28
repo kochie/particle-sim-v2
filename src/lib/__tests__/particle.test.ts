@@ -1,83 +1,91 @@
 import { Vector3 } from 'three';
-
+import {v4 as uuidv4} from "uuid"
 import {
-  Particle, ParticleGroup, Electron,
+  Particle
 } from '../particle';
-import Environment, { Options } from '../environment';
+import { KinematicMethod } from '../messages';
 
-describe('Paticle object', () => {
-  it('should create a particle', () => {
-    const p = new Particle();
+describe('Paticle object', (): void => {
+  it('should create a particle', (): void => {
+    const p = new Particle(uuidv4());
     expect(p).toBeDefined();
   });
-});
 
-const env = jest.fn<Environment, [Options]>()
-const init = (): ParticleGroup => new ParticleGroup(env);
-const zero = new Vector3(0, 0, 0);
+  it("should update the velocity", (): void => {
+    const p = new Particle(uuidv4())
 
-describe('Particle group', () => {
-  it('should make a particle group', () => {
-    const pg = new ParticleGroup(env);
-    expect(pg).toBeDefined();
-  });
+    expect(p.velocity).toEqual(new Vector3())
+    const newVel = new Vector3(1,1,1)
+    p.updateVelocity(newVel)
 
-  it('should calculate correct center of mass', () => {
-    let pg = init();
-    pg.addParticle(new Electron(new Vector3(1, 2, 3)));
-    expect(pg.centerOfMass).toEqual(new Vector3());
-    pg.calcCenterOfMass();
-    expect(pg.centerOfMass).toEqual(new Vector3(1, 2, 3));
+    expect(p.velocity).toEqual(newVel)
+  })
 
-    pg.addParticle(new Electron(new Vector3(-1, -2, -3)));
-    pg.calcCenterOfMass();
-    expect(pg.centerOfMass).toEqual(new Vector3(0, 0, 0));
+  // TODO: more test conditions, change v, q, and p
+  it("should calculate the force on the particle", (): void => {
+    const p = new Particle(uuidv4())
+    
+    const E = new Vector3(1,2,3)
+    const B = new Vector3(1,2,3)
+    const G = new Vector3(1,2,3)
+    
+    const force = p.calcForce(E,B,G)
 
-    pg = new ParticleGroup(env);
-    pg.addParticle(new Electron(new Vector3(1, 0, 0)));
-    pg.addParticle(new Electron(new Vector3(0, 1, 0)));
-    pg.addParticle(new Electron(new Vector3(0, 0, 1)));
-    pg.calcCenterOfMass();
-    expect(pg.centerOfMass).toEqual(new Vector3(1 / 3, 1 / 3, 1 / 3));
-  });
+    expect(force).toEqual(new Vector3(1,2,3))
+  })
 
-  it('should calculate correct group velocity', () => {
-    const pg = init();
-    pg.addParticle(new Electron(zero, new Vector3(1, 1, 1)));
-    pg.calcGroupVelocity();
-    expect(pg.groupVelocity).toEqual(new Vector3(1, 1, 1));
+  it("should calculate acceleration based on force and mass", (): void => {
+    const p = new Particle(uuidv4())
 
-    pg.addParticle(new Electron(zero, new Vector3(-1, -1, -1)));
-    pg.calcGroupVelocity();
-    expect(pg.groupVelocity).toEqual(zero);
+    p.force = new Vector3(1,2,3)
+    p.calcAcceleration()
+    expect(p.acceleration).toEqual(new Vector3(1,2,3))
+  })
 
-    pg.addParticle(new Electron(zero, new Vector3(5, 5, 5)));
-    pg.addParticle(new Electron(zero, new Vector3(-3, -2, -1)));
-    pg.calcGroupVelocity();
-    expect(pg.groupVelocity).toEqual(new Vector3(2, 3, 4));
-  });
+  it("should calculate acceleration based on force and mass", (): void => {
+    const p = new Particle(uuidv4())
+    p.mass = 0
+    p.force = new Vector3(1,2,3)
+    p.calcAcceleration()
 
-  it('should calculate correct group acceleration', () => {
-    const pg = init();
-    const e = new Electron();
-    e.acceleration = new Vector3(1, 1, 1);
-    pg.addParticle(e);
-    pg.calcGroupAcceleration();
-    expect(pg.groupAcceleration).toEqual(new Vector3(1, 1, 1));
+    expect(p.acceleration).toEqual(new Vector3(Infinity, Infinity, Infinity))
+  })
 
-    const e1 = new Electron();
-    e1.acceleration = new Vector3(-1, -1, -1);
-    pg.addParticle(e1);
-    pg.calcGroupAcceleration();
-    expect(pg.groupAcceleration).toEqual(zero);
+  it("should calculate the position and velocity", (): void => {
+    const p = new Particle(uuidv4())
+    const dt = 0.01
+    p.acceleration = new Vector3(2,2,2)
+    p.calcKinematics(dt, KinematicMethod.EULER)
 
-    const e2 = new Electron();
-    e2.acceleration = new Vector3(5, 5, 5);
-    const e3 = new Electron();
-    e3.acceleration = new Vector3(-3, -2, -1);
-    pg.addParticle(e2);
-    pg.addParticle(e3);
-    pg.calcGroupAcceleration();
-    expect(pg.groupAcceleration).toEqual(new Vector3(2, 3, 4));
-  });
+    expect(p.position).toEqual(new Vector3(
+      0.00030000000000000003,
+      0.00030000000000000003,
+      0.00030000000000000003
+    ))
+    expect(p.velocity).toEqual(new Vector3(
+      0.02,
+      0.02,
+      0.02
+    ))
+  })
+
+  it("should calculate the position and velocity", (): void => {
+    const p = new Particle(uuidv4())
+    const dt = 0.01
+    p.acceleration = new Vector3(2,2,2)
+    p.calcKinematics(dt, KinematicMethod.RK4)
+
+    expect(p.position).toEqual(new Vector3())
+    expect(p.velocity).toEqual(new Vector3())
+  })
+
+  it("should calculate the position and velocity", (): void => {
+    const p = new Particle(uuidv4())
+    const dt = 0.01
+    p.acceleration = new Vector3(2,2,2)
+    p.calcKinematics(dt, null)
+
+    expect(p.position).toEqual(new Vector3())
+    expect(p.velocity).toEqual(new Vector3())
+  })
 });

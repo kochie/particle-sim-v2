@@ -10,5 +10,10 @@ module.exports = {
         "jest": true
     },
     "parser": "@typescript-eslint/parser",
-    "plugins": ["@typescript-eslint"]
+    "plugins": ["@typescript-eslint"],
+    "settings": {
+        "react": {
+        "version": "detect"
+        }
+    }
 };

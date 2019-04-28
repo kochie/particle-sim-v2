@@ -11,7 +11,7 @@ export default class Canvas extends React.Component {
   }
 
   private renderCanvas(env: Environment): void {
-    window.requestAnimationFrame(() => {
+    window.requestAnimationFrame((): void => {
       this.renderCanvas(env);
     });
 
@@ -23,7 +23,7 @@ export default class Canvas extends React.Component {
 
   public render(): React.ReactElement {
     return (
-      <canvas ref={(element) => { this.canvasElement = element }} />
+      <canvas ref={(element): void => { this.canvasElement = element }} />
     );
   }
 }

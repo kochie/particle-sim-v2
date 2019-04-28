@@ -51,7 +51,7 @@ function panCamera(): () => void {
   const objectUp = new Vector3();
   const pan = new Vector3();
 
-  return () => {
+  return (): void => {
     mouseChange.copy(panEnd).sub(panStart);
 
     if (mouseChange.lengthSq()) {
@@ -112,7 +112,7 @@ function rotateCameraBuild(): () => void {
   const moveDirection = new Vector3();
   let angle: number;
 
-  return () => {
+  return (): void => {
     moveDirection.set(moveCurr.x - movePrev.x, moveCurr.y - movePrev.y, 0);
     angle = moveDirection.length();
 
