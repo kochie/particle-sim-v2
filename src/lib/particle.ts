@@ -2,7 +2,6 @@ import {
   Vector3
 } from 'three';
 import { KinematicMethod } from './messages';
-import { World } from './world';
 
 
 export class Particle {

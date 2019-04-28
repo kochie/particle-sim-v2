@@ -15,8 +15,8 @@ function createEnv(): Environment {
     });
 }
 
-describe('Environment', () => {
-  it('should create class', () => {
+describe('Environment', (): void => {
+  it('should create class', ():void => {
     const env = createEnv()
     expect(env).toBeDefined();
   });
