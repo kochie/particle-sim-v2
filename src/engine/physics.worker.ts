@@ -4,12 +4,14 @@ import { MessageReceiveType } from '../emun/MessageReceiveType'
 import { Particle } from '../rendering/particle'
 import { Vector3 } from 'three'
 
+console.log('worker started')
+
 const world = new World()
 
 onmessage = function(e: MessageEvent): void {
+	console.log('data', e.data)
 	const message = e.data as Message
 
-	console.log(message)
 	switch (message.type) {
 		case MessageReceiveType.UPDATE_GRAVITY: {
 			console.log(message.value)

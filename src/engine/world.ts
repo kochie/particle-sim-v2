@@ -46,15 +46,15 @@ export class World {
 		this.gravityField = new Field()
 		this.sumForce = []
 
-		setInterval((): void => {
-			console.log(this.particles.length)
-			console.log(
-				`Number of physics ticks - ${this.tick} in ${performance.now() -
-					this.tock}ms`,
-			)
-			this.tick = 0
-			this.tock = performance.now()
-		}, 1000)
+		// setInterval((): void => {
+		// 	console.log(this.particles.length)
+		// 	console.log(
+		// 		`Number of physics ticks - ${this.tick} in ${performance.now() -
+		// 			this.tock}ms`,
+		// 	)
+		// 	this.tick = 0
+		// 	this.tock = performance.now()
+		// }, 1000)
 	}
 
 	public calcGroupVelocity(): Vector3 {

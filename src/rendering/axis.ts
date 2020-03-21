@@ -1,88 +1,44 @@
 import {
-	Vector3,
-	Object3D,
-	Geometry,
 	LineDashedMaterial,
 	LineBasicMaterial,
 	Line,
-	Color,
+	BufferGeometry,
+	Float32BufferAttribute,
+	Group,
 } from 'three'
 
-const buildAxis = (
-	src: Vector3,
-	dst: Vector3,
-	colorHex: Color,
-	dashed: boolean,
+const createLine = (
+	src: [number, number, number],
+	dst: [number, number, number],
+	color: number,
+	dashed: boolean = false,
 ): Line => {
-	const geom: Geometry = new Geometry()
+	const geometry = new BufferGeometry()
 	let mat: LineBasicMaterial
 
 	if (dashed) {
-		mat = new LineDashedMaterial({
-			linewidth: 1,
-			color: colorHex,
-			dashSize: 5,
-			gapSize: 5,
-		})
+		mat = new LineDashedMaterial({ color, dashSize: 10, gapSize: 5 })
 	} else {
-		mat = new LineBasicMaterial({ linewidth: 1, color: colorHex })
+		mat = new LineBasicMaterial({ color })
 	}
 
-	geom.vertices.push(src.clone())
-	geom.vertices.push(dst.clone())
+	geometry.setAttribute(
+		'position',
+		new Float32BufferAttribute([...src, ...dst], 3),
+	)
 
-	return new Line(geom, mat)
+	const line = new Line(geometry, mat)
+	line.computeLineDistances()
+	return line
 }
 
-export default function buildAxes(): Object3D {
-	const axes = new Object3D()
-	axes.add(
-		buildAxis(
-			new Vector3(0, 0, 0),
-			new Vector3(1000, 0, 0),
-			new Color(0xff0000),
-			false,
-		),
-	)
-	axes.add(
-		buildAxis(
-			new Vector3(0, 0, 0),
-			new Vector3(-1000, 0, 0),
-			new Color(0x800000),
-			true,
-		),
-	)
-	axes.add(
-		buildAxis(
-			new Vector3(0, 0, 0),
-			new Vector3(0, 1000, 0),
-			new Color(0x00ff00),
-			false,
-		),
-	)
-	axes.add(
-		buildAxis(
-			new Vector3(0, 0, 0),
-			new Vector3(0, -1000, 0),
-			new Color(0x008000),
-			true,
-		),
-	)
-	axes.add(
-		buildAxis(
-			new Vector3(0, 0, 0),
-			new Vector3(0, 0, 1000),
-			new Color(0x0000ff),
-			false,
-		),
-	)
-	axes.add(
-		buildAxis(
-			new Vector3(0, 0, 0),
-			new Vector3(0, 0, -1000),
-			new Color(0x000080),
-			true,
-		),
-	)
+export default () => {
+	const axes = new Group()
+	axes.add(createLine([0, 0, 0], [500, 0, 0], 0xff0000))
+	axes.add(createLine([0, 0, 0], [-500, 0, 0], 0x800000, true))
+	axes.add(createLine([0, 0, 0], [0, 500, 0], 0x00ff00))
+	axes.add(createLine([0, 0, 0], [0, -500, 0], 0x008000, true))
+	axes.add(createLine([0, 0, 0], [0, 0, 500], 0x0000ff))
+	axes.add(createLine([0, 0, 0], [0, 0, -500], 0x000080, true))
 	return axes
 }

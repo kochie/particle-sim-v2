@@ -1,18 +1,25 @@
 import { Vector3 } from 'three'
-import { randInteger } from '../lib/random'
+// import { randInteger } from '.'
 import { ParticleType } from '../emun/ParticleType'
 import Environment from './environment'
+import { getBoundary } from './boundary'
 
 interface Options {
 	type: ParticleType
 	speedy: boolean
 }
 
+const boundary = getBoundary()
+
+const randInteger = (max: number) => {
+	return Math.floor(Math.random() * Math.floor(max))
+}
+
 export default function placeParticle(
 	env: Environment,
 	options: Options,
 ): void {
-	const size = env.getBoundarySize()
+	const size = boundary.getBoundarySize()
 	const radius = 1
 	const position = new Vector3(
 		randInteger(size - radius),

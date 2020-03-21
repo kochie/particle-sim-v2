@@ -4,15 +4,10 @@
   "description": "particle simulation app build with es6 and threejs.",
   "main": "index.js",
   "scripts": {
-    "dev": "next",
-    "build": "next build",
-    "start": "next start",
+    "build": "parcel build src/index.html",
+    "dev": "parcel src/index.html",
     "test": "jest --coverage",
-    "lint": "eslint ./src/**/*.ts --fix",
-    "deploy": "now --token $NOW_TOKEN --target production",
-    "validate": "npm ls",
     "coverage": "jest --coverage --coverageReporters=text-lcov | coveralls",
-    "benchmark": "benchtop",
     "prettier": "prettier src/**/*.ts --write",
     "pre-commit": "npm run prettier && npm run lint"
   },
@@ -20,38 +15,31 @@
     "type": "git",
     "url": "git+ssh://git@github.com/kochie/particle-sim-v2.git"
   },
-  "author": "Robert Koch",
+  "author": "Robert Koch <robert@kochie.io>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/kochie/particle-sim-v2/issues"
   },
   "homepage": "https://github.com/kochie/particle-sim-v2#readme",
   "dependencies": {
-    "@zeit/next-workers": "^1.0.0",
+    "@types/three": "^0.103.2",
     "dat.gui": "^0.7.6",
-    "next": "^9.3.0",
-    "node-sass": "^4.13.1",
-    "react": "^16.13.0",
-    "react-dom": "^16.13.0",
-    "react-three-fiber": "^4.0.20",
+    "parcel-bundler": "^1.12.4",
     "stats.js": "^0.17.0",
     "three": "^0.114.0",
-    "uuid": "^3.3.2",
-    "worker-loader": "^2.0.0"
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
     "@types/dat.gui": "^0.7.2",
     "@types/jest": "^24.0.11",
-    "@types/node": "^13.9.1",
-    "@types/react": "^16.8.10",
-    "@types/react-dom": "^16.8.3",
+    "@types/node": "^13.9.2",
     "@types/stats.js": "^0.17.0",
     "@types/uuid": "^3.4.4",
     "coveralls": "^3.0.1",
     "husky": "^4.2.3",
     "jest": "^24.7.0",
     "prettier": "^1.16.4",
-    "typescript": "^3.4.1"
+    "typescript": "^3.8.3"
   },
   "prettier": {
     "useTabs": true,

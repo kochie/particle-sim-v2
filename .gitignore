@@ -7,3 +7,5 @@ yarn-error.log
 .sass-cache/
 coverage/
 .next
+
+.now
